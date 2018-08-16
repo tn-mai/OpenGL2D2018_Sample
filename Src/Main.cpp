@@ -10,6 +10,8 @@ const int windowWidth = 800; // ウィンドウの描画領域の幅.
 const int windowHeight = 600; // ウィンドウの描画領域の高さ.
 
 SpriteRenderer renderer; // スプライトを描画するオブジェクト.
+Sprite sprBackground; // 背景用スプライト.
+Sprite sprPlayer;     // 自機用スプライト.
 
 void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
@@ -31,6 +33,10 @@ int main()
 	if (!renderer.Initialize(1024)) {
 		return 1;
 	}
+
+	//スプライトに画像を設定.
+	sprBackground = Sprite("Res/UnknownPlanet.png");
+	sprPlayer = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
 
 	// ゲームループ.
 	while (!window.ShouldClose()) {
@@ -69,5 +75,10 @@ void update(GLFWEW::WindowRef window)
 */
 void render(GLFWEW::WindowRef window)
 {
+	renderer.BeginUpdate();
+	renderer.AddVertices(sprBackground);
+	renderer.AddVertices(sprPlayer);
+	renderer.EndUpdate();
+	renderer.Draw(glm::vec2(windowWidth, windowHeight));
 	window.SwapBuffers();
 }
