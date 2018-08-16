@@ -77,7 +77,7 @@ void processInput(GLFWEW::WindowRef window)
 		playerVelocity.x = 0;
 	}
 	if (playerVelocity.x || playerVelocity.y) {
-		playerVelocity *= 400.0f;
+		playerVelocity = glm::normalize(playerVelocity) * 400.0f;
 	}
 }
 
