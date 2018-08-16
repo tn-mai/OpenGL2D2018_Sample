@@ -129,7 +129,7 @@ void processInput(GLFWEW::WindowRef window)
 				TweenAnimation::MoveBy::Create(1, glm::vec3(1200, 0, 0),
 				TweenAnimation::EasingType::Linear)));
 			bullet->collisionShape = Rect(-8, -4, 16, 8);
-			bullet->health = 1;
+			bullet->health = 4;
 		}
 	}
 }
