@@ -4,16 +4,32 @@
 #include "GLFWEW.h"
 #include "Texture.h"
 #include "Sprite.h"
+#include <random>
 
 const char windowTitle[] = "OpenGL2D 2018"; // タイトルバーに表示される文章.
 const int windowWidth = 800; // ウィンドウの描画領域の幅.
 const int windowHeight = 600; // ウィンドウの描画領域の高さ.
+
+std::mt19937 random; // 乱数を発生させる変数(乱数エンジン).
+
+/**
+* ゲームキャラクター構造体.
+*/
+struct Actor
+{
+	Sprite spr; // 画像表示用スプライト.
+	Rect collisionShape; // 衝突判定の位置と大きさ.
+	int health; // 耐久力(0以下なら破壊されている).
+};
 
 SpriteRenderer renderer; // スプライトを描画するオブジェクト.
 Sprite sprBackground; // 背景用スプライト.
 Sprite sprPlayer;     // 自機用スプライト.
 
 glm::vec3 playerVelocity; // 自機の移動速度.
+
+Actor enemyList[128]; // 敵のリスト.
+float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 
 void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
@@ -36,9 +52,18 @@ int main()
 		return 1;
 	}
 
+	random.seed(std::random_device()()); // 乱数エンジンの初期化.
+
 	//スプライトに画像を設定.
 	sprBackground = Sprite("Res/UnknownPlanet.png");
 	sprPlayer = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
+
+	// 敵の配列を初期化.
+	for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
+		i->health = 0;
+	}
+
+	enemyGenerationTimer = 2;
 
 	// ゲームループ.
 	while (!window.ShouldClose()) {
@@ -108,6 +133,37 @@ void update(GLFWEW::WindowRef window)
 		sprPlayer.Position(newPos);
 	}
 	sprPlayer.Update(deltaTime);
+
+	// 出現までの時間が0以下になったら敵を出現させる.
+	enemyGenerationTimer -= deltaTime;
+	if (enemyGenerationTimer <= 0) {
+		// 空いている(破壊されている)敵構造体を検索.
+		Actor* enemy = nullptr;
+		for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
+			if (i->health <= 0) {
+				enemy = i;
+				break;
+			}
+		}
+		// 空いている構造体が見つかったら、それを使って敵を出現させる.
+		if (enemy != nullptr) {
+			const std::uniform_real_distribution<float> y_distribution(
+				-0.5f * windowHeight, 0.5f * windowHeight);
+			enemy->spr = Sprite("Res/Objects.png",
+				glm::vec3(0.5f * windowWidth, y_distribution(random), 0),
+				Rect(480, 0, 32, 32));
+			enemy->collisionShape = Rect(-16, -16, 32, 32);
+			enemy->health = 1;
+			// 次の敵が出現するまでの時間を設定する.
+			enemyGenerationTimer = 2;
+		}
+	}
+	// 敵の更新.
+	for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
+		if (i->health > 0) {
+			i->spr.Update(deltaTime);
+		}
+	}
 }
 
 /**
@@ -120,6 +176,11 @@ void render(GLFWEW::WindowRef window)
 	renderer.BeginUpdate();
 	renderer.AddVertices(sprBackground);
 	renderer.AddVertices(sprPlayer);
+	for (const Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
+		if (i->health > 0) {
+			renderer.AddVertices(i->spr);
+		}
+	}
 	renderer.EndUpdate();
 	renderer.Draw(glm::vec2(windowWidth, windowHeight));
 	window.SwapBuffers();
