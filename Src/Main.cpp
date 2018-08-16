@@ -93,6 +93,18 @@ void update(GLFWEW::WindowRef window)
 	// ©‹@‚ÌˆÚ“®.
 	if (playerVelocity.x || playerVelocity.y) {
 		glm::vec3 newPos = sprPlayer.Position() + playerVelocity * deltaTime;
+		// ©‹@‚ÌˆÚ“®”ÍˆÍ‚ğ‰æ–Ê“à‚É§ŒÀ‚·‚é.
+		const Rect playerRect = sprPlayer.Rectangle();
+		if (newPos.x < -0.5f * (windowWidth - playerRect.size.x)) {
+			newPos.x = -0.5f * (windowWidth - playerRect.size.x);
+		} else if (newPos.x > 0.5f * (windowWidth - playerRect.size.x)) {
+			newPos.x = 0.5f * (windowWidth - playerRect.size.x);
+		}
+		if (newPos.y < -0.5f * (windowHeight - playerRect.size.y)) {
+			newPos.y = -0.5f * (windowHeight - playerRect.size.y);
+		} else if (newPos.y > 0.5f * (windowHeight - playerRect.size.y)) {
+			newPos.y = 0.5f * (windowHeight - playerRect.size.y);
+		}
 		sprPlayer.Position(newPos);
 	}
 	sprPlayer.Update(deltaTime);
