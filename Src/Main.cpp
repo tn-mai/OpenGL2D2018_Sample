@@ -29,6 +29,7 @@ Sprite sprPlayer;     // 自機用スプライト.
 glm::vec3 playerVelocity; // 自機の移動速度.
 
 Actor enemyList[128]; // 敵のリスト.
+Actor playerBulletList[128]; // 自機の弾のリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 
 void processInput(GLFWEW::WindowRef);
@@ -60,6 +61,10 @@ int main()
 
 	// 敵の配列を初期化.
 	for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
+		i->health = 0;
+	}
+	// 自機の弾の配列を初期化.
+	for (Actor* i = std::begin(playerBulletList); i != std::end(playerBulletList); ++i) {
 		i->health = 0;
 	}
 
@@ -103,6 +108,28 @@ void processInput(GLFWEW::WindowRef window)
 	}
 	if (playerVelocity.x || playerVelocity.y) {
 		playerVelocity = glm::normalize(playerVelocity) * 400.0f;
+	}
+
+	// 弾の発射.
+	if (gamepad.buttonDown & GamePad::A) {
+		// 空いている弾の構造体を検索.
+		Actor* bullet = nullptr;
+		for (Actor* i = std::begin(playerBulletList);
+			i != std::end(playerBulletList); ++i) {
+			if (i->health <= 0) {
+				bullet = i;
+				break;
+			}
+		}
+		// 空いている構造体が見つかったら、それを使って弾を発射する.
+		if (bullet != nullptr) {
+			bullet->spr = Sprite("Res/Objects.png", sprPlayer.Position(), Rect(64, 0, 32, 16));
+			bullet->spr.Tweener(TweenAnimation::Animate::Create(
+				TweenAnimation::MoveBy::Create(1, glm::vec3(1200, 0, 0),
+				TweenAnimation::EasingType::Linear)));
+			bullet->collisionShape = Rect(-8, -4, 16, 8);
+			bullet->health = 1;
+		}
 	}
 }
 
@@ -171,6 +198,15 @@ void update(GLFWEW::WindowRef window)
 			}
 		}
 	}
+	// 自機の弾の更新.
+	for (Actor* i = std::begin(playerBulletList); i != std::end(playerBulletList); ++i) {
+		if (i->health > 0) {
+			i->spr.Update(deltaTime);
+			if (i->spr.Tweener()->IsFinished()) {
+				i->health = 0;
+			}
+		}
+	}
 }
 
 /**
@@ -184,6 +220,11 @@ void render(GLFWEW::WindowRef window)
 	renderer.AddVertices(sprBackground);
 	renderer.AddVertices(sprPlayer);
 	for (const Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
+		if (i->health > 0) {
+			renderer.AddVertices(i->spr);
+		}
+	}
+	for (const Actor* i = std::begin(playerBulletList); i != std::end(playerBulletList); ++i) {
 		if (i->health > 0) {
 			renderer.AddVertices(i->spr);
 		}
