@@ -152,6 +152,9 @@ void update(GLFWEW::WindowRef window)
 			enemy->spr = Sprite("Res/Objects.png",
 				glm::vec3(0.5f * windowWidth, y_distribution(random), 0),
 				Rect(480, 0, 32, 32));
+			enemy->spr.Tweener(TweenAnimation::Animate::Create(
+				TweenAnimation::MoveBy::Create(
+				5.0f, glm::vec3(-1000, 0, 0), TweenAnimation::EasingType::Linear)));
 			enemy->collisionShape = Rect(-16, -16, 32, 32);
 			enemy->health = 1;
 			// ŽŸ‚Ì“G‚ªoŒ»‚·‚é‚Ü‚Å‚ÌŽžŠÔ‚ðÝ’è‚·‚é.
@@ -163,6 +166,9 @@ void update(GLFWEW::WindowRef window)
 	for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
 		if (i->health > 0) {
 			i->spr.Update(deltaTime);
+			if (i->spr.Tweener()->IsFinished()) {
+				i->health = 0;
+			}
 		}
 	}
 }
