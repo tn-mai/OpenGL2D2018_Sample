@@ -223,8 +223,9 @@ void update(GLFWEW::WindowRef window)
 			Rect enemyRect = enemy->collisionShape;
 			enemyRect.origin += glm::vec2(enemy->spr.Position());
 			if (detectCollision(&shotRect, &enemyRect)) {
-				bullet->health -= 1;
-				enemy->health -= 1;
+				const int tmp = bullet->health;
+				bullet->health -= enemy->health;
+				enemy->health -= tmp;
 				break;
 			}
 		}
