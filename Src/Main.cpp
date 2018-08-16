@@ -11,6 +11,10 @@ const int windowHeight = 600; // ウィンドウの描画領域の高さ.
 
 SpriteRenderer renderer; // スプライトを描画するオブジェクト.
 
+void processInput(GLFWEW::WindowRef);
+void update(GLFWEW::WindowRef);
+void render(GLFWEW::WindowRef);
+
 /**
 * プログラムのエントリーポイント.
 */
@@ -28,6 +32,42 @@ int main()
 		return 1;
 	}
 
+	// ゲームループ.
+	while (!window.ShouldClose()) {
+		processInput(window);
+		update(window);
+		render(window);
+	}
+
 	Texture::Finalize();
 	return 0;
+}
+
+/**
+* プレイヤーの入力を処理する.
+*
+* @param window ゲームを管理するウィンドウ.
+*/
+void processInput(GLFWEW::WindowRef window)
+{
+	window.Update();
+}
+
+/**
+* ゲームの状態を更新する.
+*
+* @param window ゲームを管理するウィンドウ.
+*/
+void update(GLFWEW::WindowRef window)
+{
+}
+
+/**
+* ゲームの状態を描画する.
+*
+* @param window ゲームを管理するウィンドウ.
+*/
+void render(GLFWEW::WindowRef window)
+{
+	window.SwapBuffers();
 }
