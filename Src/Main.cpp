@@ -13,6 +13,8 @@ SpriteRenderer renderer; // スプライトを描画するオブジェクト.
 Sprite sprBackground; // 背景用スプライト.
 Sprite sprPlayer;     // 自機用スプライト.
 
+glm::vec3 playerVelocity; // 自機の移動速度.
+
 void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
@@ -57,6 +59,26 @@ int main()
 void processInput(GLFWEW::WindowRef window)
 {
 	window.Update();
+
+	// 自機の速度を設定する.
+	const GamePad gamepad = window.GetGamePad();
+	if (gamepad.buttons & GamePad::DPAD_UP) {
+		playerVelocity.y = 1;
+	} else if (gamepad.buttons & GamePad::DPAD_DOWN) {
+		playerVelocity.y = -1;
+	} else {
+		playerVelocity.y = 0;
+	}
+	if (gamepad.buttons & GamePad::DPAD_RIGHT) {
+		playerVelocity.x = 1;
+	} else if (gamepad.buttons & GamePad::DPAD_LEFT) {
+		playerVelocity.x = -1;
+	} else {
+		playerVelocity.x = 0;
+	}
+	if (playerVelocity.x || playerVelocity.y) {
+		playerVelocity *= 400.0f;
+	}
 }
 
 /**
@@ -66,6 +88,14 @@ void processInput(GLFWEW::WindowRef window)
 */
 void update(GLFWEW::WindowRef window)
 {
+	const float deltaTime = window.DeltaTime(); // 前回の更新からの経過時間(秒).
+
+	// 自機の移動.
+	if (playerVelocity.x || playerVelocity.y) {
+		glm::vec3 newPos = sprPlayer.Position() + playerVelocity * deltaTime;
+		sprPlayer.Position(newPos);
+	}
+	sprPlayer.Update(deltaTime);
 }
 
 /**
