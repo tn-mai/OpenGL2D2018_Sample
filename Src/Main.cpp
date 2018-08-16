@@ -35,6 +35,7 @@ float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
+bool detectCollision(const Rect*, const Rect*);
 
 /**
 * プログラムのエントリーポイント.
@@ -207,6 +208,27 @@ void update(GLFWEW::WindowRef window)
 			}
 		}
 	}
+
+	// 自機の弾と敵の衝突判定.
+	for (Actor* bullet = std::begin(playerBulletList); bullet != std::end(playerBulletList); ++bullet) {
+		if (bullet->health <= 0) {
+			continue;
+		}
+		Rect shotRect = bullet->collisionShape;
+		shotRect.origin += glm::vec2(bullet->spr.Position());
+		for (Actor* enemy = std::begin(enemyList); enemy != std::end(enemyList); ++enemy) {
+			if (enemy->health <= 0) {
+				continue;
+			}
+			Rect enemyRect = enemy->collisionShape;
+			enemyRect.origin += glm::vec2(enemy->spr.Position());
+			if (detectCollision(&shotRect, &enemyRect)) {
+				bullet->health -= 1;
+				enemy->health -= 1;
+				break;
+			}
+		}
+	}
 }
 
 /**
@@ -232,4 +254,22 @@ void render(GLFWEW::WindowRef window)
 	renderer.EndUpdate();
 	renderer.Draw(glm::vec2(windowWidth, windowHeight));
 	window.SwapBuffers();
+}
+
+/**
+* 2つの長方形の衝突状態を調べる.
+*
+* @param lhs 長方形その1.
+* @param rhs 長方形その2.
+*
+* @retval true  衝突している.
+* @retval false 衝突していない.
+*/
+bool detectCollision(const Rect* lhs, const Rect* rhs)
+{
+	return
+		lhs->origin.x < rhs->origin.x + rhs->size.x &&
+		lhs->origin.x + lhs->size.x > rhs->origin.x &&
+		lhs->origin.y < rhs->origin.y + rhs->size.y &&
+		lhs->origin.y + lhs->size.y > rhs->origin.y;
 }
