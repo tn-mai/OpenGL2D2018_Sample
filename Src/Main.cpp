@@ -154,7 +154,7 @@ void update(GLFWEW::WindowRef window)
 				Rect(480, 0, 32, 32));
 			enemy->spr.Tweener(TweenAnimation::Animate::Create(
 				TweenAnimation::MoveBy::Create(
-				5.0f, glm::vec3(-500, 0, 0), TweenAnimation::EasingType::Linear)));
+				5.0f, glm::vec3(-1000, 0, 0), TweenAnimation::EasingType::Linear)));
 			enemy->collisionShape = Rect(-16, -16, 32, 32);
 			enemy->health = 1;
 			// Ÿ‚Ì“G‚ªoŒ»‚·‚é‚Ü‚Å‚ÌŠÔ‚ğİ’è‚·‚é.
