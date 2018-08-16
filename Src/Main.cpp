@@ -155,7 +155,8 @@ void update(GLFWEW::WindowRef window)
 			enemy->collisionShape = Rect(-16, -16, 32, 32);
 			enemy->health = 1;
 			// Ÿ‚Ì“G‚ªoŒ»‚·‚é‚Ü‚Å‚ÌŠÔ‚ğİ’è‚·‚é.
-			enemyGenerationTimer = 2;
+			const std::uniform_real_distribution<float> time_distribution(0.5f, 4.0f);
+			enemyGenerationTimer = time_distribution(random);
 		}
 	}
 	// “G‚ÌXV.
