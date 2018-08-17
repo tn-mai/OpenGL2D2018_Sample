@@ -32,6 +32,16 @@ Actor enemyList[128]; // 敵のリスト.
 Actor playerBulletList[128]; // 自機の弾のリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 
+// 敵のアニメーション.
+const FrameAnimation::KeyFrame enemyKeyFrames[] = {
+	{ 0.000f, glm::vec2(480, 0), glm::vec2(32, 32) },
+	{ 0.125f, glm::vec2(480, 96), glm::vec2(32, 32) },
+	{ 0.250f, glm::vec2(480, 64), glm::vec2(32, 32) },
+	{ 0.375f, glm::vec2(480, 32), glm::vec2(32, 32) },
+	{ 0.500f, glm::vec2(480, 0), glm::vec2(32, 32) },
+};
+FrameAnimation::TimelinePtr tlEnemy;
+
 void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
@@ -55,6 +65,9 @@ int main()
 	}
 
 	random.seed(std::random_device()()); // 乱数エンジンの初期化.
+
+	// アニメーション・タイムラインの作成.
+	tlEnemy = FrameAnimation::Timeline::Create(enemyKeyFrames);
 
 	//スプライトに画像を設定.
 	sprBackground = Sprite("Res/UnknownPlanet.png");
@@ -180,6 +193,9 @@ void update(GLFWEW::WindowRef window)
 			enemy->spr = Sprite("Res/Objects.png",
 				glm::vec3(0.5f * windowWidth, y_distribution(random), 0),
 				Rect(480, 0, 32, 32));
+			// フレームアニメーションの設定.
+			enemy->spr.Animator(FrameAnimation::Animate::Create(tlEnemy));
+			// トウィーニングの設定.
 			namespace TA = TweenAnimation;
 			TA::SequencePtr seq = TA::Sequence::Create(1);
 			seq->Add(TA::MoveBy::Create(1, glm::vec3(-400, 0, 0), TA::EasingType::EaseOut, TA::Target::X));
