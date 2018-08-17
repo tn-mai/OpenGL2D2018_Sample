@@ -181,12 +181,12 @@ void update(GLFWEW::WindowRef window)
 				glm::vec3(0.5f * windowWidth, y_distribution(random), 0),
 				Rect(480, 0, 32, 32));
 			namespace TA = TweenAnimation;
-			TA::SequencePtr seq = TA::Sequence::Create(4);
-			seq->Add(TA::MoveBy::Create(1, glm::vec3(0, 100, 0), TA::EasingType::EaseInOut, TA::Target::Y));
-			seq->Add(TA::MoveBy::Create(1, glm::vec3(0, -100, 0), TA::EasingType::EaseInOut, TA::Target::Y));
+			TA::SequencePtr seq = TA::Sequence::Create(1);
+			seq->Add(TA::MoveBy::Create(1, glm::vec3(-400, 0, 0), TA::EasingType::EaseOut, TA::Target::X));
+			seq->Add(TA::MoveBy::Create(1, glm::vec3(400, 0, 0), TA::EasingType::EaseIn, TA::Target::X));
 			TA::ParallelizePtr par = TA::Parallelize::Create(1);
 			par->Add(seq);
-			par->Add(TA::MoveBy::Create(8, glm::vec3(-1000, 0, 0), TA::EasingType::Linear, TA::Target::X));
+			par->Add(TA::MoveBy::Create(2, glm::vec3(0, -300, 0), TA::EasingType::Linear, TA::Target::Y));
 			enemy->spr.Tweener(TA::Animate::Create(par));
 			enemy->collisionShape = Rect(-16, -16, 32, 32);
 			enemy->health = 3;
