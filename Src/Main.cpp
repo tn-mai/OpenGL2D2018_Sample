@@ -67,6 +67,7 @@ bool detectCollision(const Rect*, const Rect*);
 void initializeActorList(Actor*, Actor*);
 void updateActorList(Actor*, Actor*, float);
 void renderActorList(const Actor*, const Actor*);
+Actor* findAvailableActor(Actor*, Actor*);
 
 /**
 * プログラムのエントリーポイント.
@@ -155,15 +156,7 @@ void processInput(GLFWEW::WindowRef window)
 
 	// 弾の発射.
 	if (gamepad.buttonDown & GamePad::A) {
-		// 空いている弾の構造体を検索.
-		Actor* bullet = nullptr;
-		for (Actor* i = std::begin(playerBulletList);
-			i != std::end(playerBulletList); ++i) {
-			if (i->health <= 0) {
-				bullet = i;
-				break;
-			}
-		}
+		Actor* bullet = findAvailableActor(std::begin(playerBulletList), std::end(playerBulletList));
 		// 空いている構造体が見つかったら、それを使って弾を発射する.
 		if (bullet != nullptr) {
 			bullet->spr = Sprite("Res/Objects.png", sprPlayer.Position(), Rect(64, 0, 32, 16));
@@ -405,4 +398,28 @@ void renderActorList(const Actor* first, const Actor* last)
 			renderer.AddVertices(i->spr);
 		}
 	}
+}
+
+/**
+* 利用可能なのActorを取得する.
+*
+* @param first 検索対象の先頭要素のポインタ.
+* @param last  検索対象の終端要素のポインタ.
+*
+* @return 利用可能なActorのポインタ.
+*         利用可能なActorが見つからなければnullptr.
+*
+* [first, last)の範囲から、利用可能な(healthが0以下の)Actorを検索する.
+*/
+Actor* findAvailableActor(Actor* first, Actor* last)
+{
+	Actor* result = nullptr;
+	for (Actor* i = first;
+		i != last; ++i) {
+		if (i->health <= 0) {
+			result = i;
+			break;
+		}
+	}
+	return result;
 }
