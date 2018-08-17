@@ -61,6 +61,9 @@ const FrameAnimation::KeyFrame playerKeyFrames[] = {
 };
 FrameAnimation::TimelinePtr tlPlayer;
 
+/*
+* プロトタイプ宣言.
+*/
 void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
