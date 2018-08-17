@@ -515,4 +515,16 @@ void playerAndEnemyContactHandler(Actor* player, Actor* enemy)
 			blast->health = 1;
 		}
 	}
+	if (player->health <= 0) {
+		Actor* blast = findAvailableActor(
+			std::begin(effectList), std::end(effectList));
+		if (blast != nullptr) {
+			blast->spr = Sprite("Res/Objects.png", player->spr.Position());
+			blast->spr.Animator(FrameAnimation::Animate::Create(tlBlast));
+			namespace TA = TweenAnimation;
+			blast->spr.Tweener(TA::Animate::Create(TA::Rotation::Create(20 / 60.0f, 1.5f)));
+			blast->spr.Scale(glm::vec2(2, 2)); // Ž©‹@‚Ì”š”­‚Í­‚µ‘å‚«‚ß‚É‚·‚é.
+			blast->health = 1;
+		}
+	}
 }
