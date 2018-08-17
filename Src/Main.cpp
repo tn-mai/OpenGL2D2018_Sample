@@ -33,6 +33,7 @@ glm::vec3 playerVelocity; // 自機の移動速度.
 
 Actor enemyList[128]; // 敵のリスト.
 Actor playerBulletList[128]; // 自機の弾のリスト.
+Actor effectList[128]; // 爆発などの特殊効果用スプライトのリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
 
@@ -108,6 +109,7 @@ int main()
 
 	initializeActorList(std::begin(enemyList), std::end(enemyList));
 	initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
+	initializeActorList(std::begin(effectList), std::end(effectList));
 
 	enemyGenerationTimer = 2;
 	score = 0;
@@ -280,6 +282,7 @@ void update(GLFWEW::WindowRef window)
 	// Actorの更新.
 	updateActorList(std::begin(enemyList), std::end(enemyList), deltaTime);
 	updateActorList(std::begin(playerBulletList), std::end(playerBulletList), deltaTime);
+	updateActorList(std::begin(effectList), std::end(effectList), deltaTime);
 
 	// 自機の弾と敵の衝突判定.
 	detectCollision(
