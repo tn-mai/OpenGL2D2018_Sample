@@ -64,6 +64,7 @@ void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
 bool detectCollision(const Rect*, const Rect*);
+void initializeActorList(Actor*, Actor*);
 
 /**
 * プログラムのエントリーポイント.
@@ -99,14 +100,8 @@ int main()
 	sprPlayer = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
 	sprPlayer.Animator(FrameAnimation::Animate::Create(tlPlayer));
 
-	// 敵の配列を初期化.
-	for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
-		i->health = 0;
-	}
-	// 自機の弾の配列を初期化.
-	for (Actor* i = std::begin(playerBulletList); i != std::end(playerBulletList); ++i) {
-		i->health = 0;
-	}
+	initializeActorList(std::begin(enemyList), std::end(enemyList));
+	initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
 
 	enemyGenerationTimer = 2;
 	score = 0;
@@ -384,4 +379,17 @@ bool detectCollision(const Rect* lhs, const Rect* rhs)
 		lhs->origin.x + lhs->size.x > rhs->origin.x &&
 		lhs->origin.y < rhs->origin.y + rhs->size.y &&
 		lhs->origin.y + lhs->size.y > rhs->origin.y;
+}
+
+/**
+* Actorの配列を初期化する.
+*
+* @param  first  初期化する配列の先頭.
+* @param  last    初期化する配列の終端.
+*/
+void initializeActorList(Actor* first, Actor* last)
+{
+	for (Actor* i = first; i != last; ++i) {
+		i->health = 0;
+	}
 }
