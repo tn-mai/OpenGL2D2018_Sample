@@ -182,8 +182,10 @@ void update(GLFWEW::WindowRef window)
 				Rect(480, 0, 32, 32));
 			namespace TA = TweenAnimation;
 			TA::SequencePtr seq = TA::Sequence::Create(4);
-			seq->Add(TA::MoveBy::Create(1, glm::vec3(-100, 100, 0), TA::EasingType::Linear));
-			seq->Add(TA::MoveBy::Create(1, glm::vec3(-100, -100, 0), TA::EasingType::Linear));
+			seq->Add(TA::MoveBy::Create(1, glm::vec3(-100, 0, 0), TA::EasingType::Linear));
+			seq->Add(TA::MoveBy::Create(1, glm::vec3(0, 100, 0), TA::EasingType::Linear));
+			seq->Add(TA::MoveBy::Create(1, glm::vec3(-100, 0, 0), TA::EasingType::Linear));
+			seq->Add(TA::MoveBy::Create(1, glm::vec3(0, -100, 0), TA::EasingType::Linear));
 			enemy->spr.Tweener(TA::Animate::Create(seq));
 			enemy->collisionShape = Rect(-16, -16, 32, 32);
 			enemy->health = 3;
