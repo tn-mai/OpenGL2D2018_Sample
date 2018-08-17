@@ -66,6 +66,7 @@ void render(GLFWEW::WindowRef);
 bool detectCollision(const Rect*, const Rect*);
 void initializeActorList(Actor*, Actor*);
 void updateActorList(Actor*, Actor*, float);
+void renderActorList(const Actor*, const Actor*);
 
 /**
 * プログラムのエントリーポイント.
@@ -325,16 +326,8 @@ void render(GLFWEW::WindowRef window)
 	renderer.BeginUpdate();
 	renderer.AddVertices(sprBackground);
 	renderer.AddVertices(sprPlayer);
-	for (const Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
-		if (i->health > 0) {
-			renderer.AddVertices(i->spr);
-		}
-	}
-	for (const Actor* i = std::begin(playerBulletList); i != std::end(playerBulletList); ++i) {
-		if (i->health > 0) {
-			renderer.AddVertices(i->spr);
-		}
-	}
+	renderActorList(std::begin(enemyList), std::end(enemyList));
+	renderActorList(std::begin(playerBulletList), std::end(playerBulletList));
 	renderer.EndUpdate();
 	renderer.Draw(glm::vec2(windowWidth, windowHeight));
 
@@ -395,6 +388,21 @@ void updateActorList(Actor* first, Actor* last, float deltaTime)
 			if (i->spr.Tweener()->IsFinished()) {
 				i->health = 0;
 			}
+		}
+	}
+}
+
+/**
+* Actorの配列を描画する.
+*
+* @param  first      更新する配列の先頭.
+* @param  last       更新する配列の終端.
+*/
+void renderActorList(const Actor* first, const Actor* last)
+{
+	for (const Actor* i = first; i != last; ++i) {
+		if (i->health > 0) {
+			renderer.AddVertices(i->spr);
 		}
 	}
 }
