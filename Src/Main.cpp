@@ -31,6 +31,7 @@ glm::vec3 playerVelocity; // 自機の移動速度.
 Actor enemyList[128]; // 敵のリスト.
 Actor playerBulletList[128]; // 自機の弾のリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
+int score; // プレイヤーの得点.
 
 // 敵のアニメーション.
 const FrameAnimation::KeyFrame enemyKeyFrames[] = {
@@ -94,6 +95,7 @@ int main()
 	}
 
 	enemyGenerationTimer = 2;
+	score = 0;
 
 	// ゲームループ.
 	while (!window.ShouldClose()) {
@@ -258,6 +260,7 @@ void update(GLFWEW::WindowRef window)
 				const int tmp = bullet->health;
 				bullet->health -= enemy->health;
 				enemy->health -= tmp;
+				score += 100; // 敵を破壊したら得点を増やす.
 				break;
 			}
 		}
