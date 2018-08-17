@@ -68,6 +68,9 @@ void initializeActorList(Actor*, Actor*);
 void updateActorList(Actor*, Actor*, float);
 void renderActorList(const Actor*, const Actor*);
 Actor* findAvailableActor(Actor*, Actor*);
+using CollisionHandlerType = void(*)(Actor*, Actor*); // 衝突処理関数の型.
+void detectCollision(Actor*, Actor*, Actor*, Actor*, CollisionHandlerType);
+void playerBulletAndEnemyContactHandler(Actor*, Actor*);
 
 /**
 * プログラムのエントリーポイント.
@@ -279,27 +282,10 @@ void update(GLFWEW::WindowRef window)
 	updateActorList(std::begin(playerBulletList), std::end(playerBulletList), deltaTime);
 
 	// 自機の弾と敵の衝突判定.
-	for (Actor* bullet = std::begin(playerBulletList); bullet != std::end(playerBulletList); ++bullet) {
-		if (bullet->health <= 0) {
-			continue;
-		}
-		Rect shotRect = bullet->collisionShape;
-		shotRect.origin += glm::vec2(bullet->spr.Position());
-		for (Actor* enemy = std::begin(enemyList); enemy != std::end(enemyList); ++enemy) {
-			if (enemy->health <= 0) {
-				continue;
-			}
-			Rect enemyRect = enemy->collisionShape;
-			enemyRect.origin += glm::vec2(enemy->spr.Position());
-			if (detectCollision(&shotRect, &enemyRect)) {
-				const int tmp = bullet->health;
-				bullet->health -= enemy->health;
-				enemy->health -= tmp;
-				score += 100; // 敵を破壊したら得点を増やす.
-				break;
-			}
-		}
-	}
+	detectCollision(
+		std::begin(playerBulletList), std::end(playerBulletList),
+		std::begin(enemyList), std::end(enemyList),
+		playerBulletAndEnemyContactHandler);
 }
 
 /**
@@ -415,4 +401,51 @@ Actor* findAvailableActor(Actor* first, Actor* last)
 		}
 	}
 	return result;
+}
+
+/**
+* 衝突を検出する.
+*
+* @param firstA    衝突させる配列Aの先頭ポインタ.
+* @param lastA     衝突させる配列Aの終端ポインタ.
+* @param firstB    衝突させる配列Bの先頭ポインタ.
+* @param lastB     衝突させる配列Bの終端ポインタ.
+* @param handler   A-B間で衝突が検出されたときに実行する関数.
+*/
+void detectCollision(Actor* firstA, Actor* lastA, Actor* firstB, Actor* lastB, CollisionHandlerType handler)
+{
+	for (Actor* a = firstA; a != lastA; ++a) {
+		if (a->health <= 0) {
+			continue;
+		}
+		Rect rectA = a->collisionShape;
+		rectA.origin += glm::vec2(a->spr.Position());
+		for (Actor* b = firstB; b != lastB; ++b) {
+			if (b->health <= 0) {
+				continue;
+			}
+			Rect rectB = b->collisionShape;
+			rectB.origin += glm::vec2(b->spr.Position());
+			if (detectCollision(&rectA, &rectB)) {
+				handler(a, b);
+				if (a->health <= 0) {
+					break;
+				}
+			}
+		}
+	}
+}
+
+/**
+* 自機の弾と敵の衝突を処理する.
+*
+* @param bullet 自機の弾のポインタ.
+* @param enemy  敵のポインタ.
+*/
+void playerBulletAndEnemyContactHandler(Actor* bullet, Actor* enemy)
+{
+	const int tmp = bullet->health;
+	bullet->health -= enemy->health;
+	enemy->health -= tmp;
+	score += 100; // 敵を破壊したら得点を増やす.
 }
