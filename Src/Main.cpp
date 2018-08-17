@@ -42,6 +42,15 @@ const FrameAnimation::KeyFrame enemyKeyFrames[] = {
 };
 FrameAnimation::TimelinePtr tlEnemy;
 
+// 自機のアニメーション.
+const FrameAnimation::KeyFrame playerKeyFrames[] = {
+	{ 0.000f, glm::vec2(0, 0), glm::vec2(64, 32) },
+	{ 0.125f, glm::vec2(0, 32), glm::vec2(64, 32) },
+	{ 0.250f, glm::vec2(0, 64), glm::vec2(64, 32) },
+	{ 0.375f, glm::vec2(0, 0), glm::vec2(64, 32) },
+};
+FrameAnimation::TimelinePtr tlPlayer;
+
 void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
@@ -68,10 +77,12 @@ int main()
 
 	// アニメーション・タイムラインの作成.
 	tlEnemy = FrameAnimation::Timeline::Create(enemyKeyFrames);
+	tlPlayer = FrameAnimation::Timeline::Create(playerKeyFrames);
 
 	//スプライトに画像を設定.
 	sprBackground = Sprite("Res/UnknownPlanet.png");
 	sprPlayer = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
+	sprPlayer.Animator(FrameAnimation::Animate::Create(tlPlayer));
 
 	// 敵の配列を初期化.
 	for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
