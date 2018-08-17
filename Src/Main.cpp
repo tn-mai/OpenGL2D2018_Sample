@@ -180,9 +180,11 @@ void update(GLFWEW::WindowRef window)
 			enemy->spr = Sprite("Res/Objects.png",
 				glm::vec3(0.5f * windowWidth, y_distribution(random), 0),
 				Rect(480, 0, 32, 32));
-			enemy->spr.Tweener(TweenAnimation::Animate::Create(
-				TweenAnimation::MoveBy::Create(
-				5.0f, glm::vec3(-1000, 0, 0), TweenAnimation::EasingType::Linear)));
+			namespace TA = TweenAnimation;
+			TA::SequencePtr seq = TA::Sequence::Create(2);
+			seq->Add(TA::MoveBy::Create(1, glm::vec3(-200, 100, 0), TA::EasingType::Linear));
+			seq->Add(TA::MoveBy::Create(1, glm::vec3(-200, -100, 0), TA::EasingType::Linear));
+			enemy->spr.Tweener(TA::Animate::Create(seq));
 			enemy->collisionShape = Rect(-16, -16, 32, 32);
 			enemy->health = 3;
 			// Ÿ‚Ì“G‚ªoŒ»‚·‚é‚Ü‚Å‚ÌŠÔ‚ğİ’è‚·‚é.
