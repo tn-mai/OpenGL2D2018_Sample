@@ -85,6 +85,7 @@ Actor* findAvailableActor(Actor*, Actor*);
 using CollisionHandlerType = void(*)(Actor*, Actor*); // 衝突処理関数の型.
 void detectCollision(Actor*, Actor*, Actor*, Actor*, CollisionHandlerType);
 void playerBulletAndEnemyContactHandler(Actor*, Actor*);
+void playerAndEnemyContactHandler(Actor*, Actor*);
 
 /**
 * プログラムのエントリーポイント.
@@ -473,6 +474,30 @@ void playerBulletAndEnemyContactHandler(Actor* bullet, Actor* enemy)
 {
 	const int tmp = bullet->health;
 	bullet->health -= enemy->health;
+	enemy->health -= tmp;
+	if (enemy->health <= 0) {
+		score += 100;
+		Actor* blast = findAvailableActor(std::begin(effectList), std::end(effectList));
+		if (blast != nullptr) {
+			blast->spr = Sprite("Res/Objects.png", enemy->spr.Position());
+			blast->spr.Animator(FrameAnimation::Animate::Create(tlBlast));
+			namespace TA = TweenAnimation;
+			blast->spr.Tweener(TA::Animate::Create(TA::Rotation::Create(20 / 60.0f, 1.5f)));
+			blast->health = 1;
+		}
+	}
+}
+
+/**
+* 自機と敵の衝突を処理する.
+*
+* @param player 自機のポインタ.
+* @param enemy  敵のポインタ.
+*/
+void playerAndEnemyContactHandler(Actor* player, Actor* enemy)
+{
+	const int tmp = player->health;
+	player->health -= enemy->health;
 	enemy->health -= tmp;
 	if (enemy->health <= 0) {
 		score += 100;
