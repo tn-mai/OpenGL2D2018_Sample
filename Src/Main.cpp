@@ -311,6 +311,11 @@ void update(GLFWEW::WindowRef window)
 		std::begin(playerBulletList), std::end(playerBulletList),
 		std::begin(enemyList), std::end(enemyList),
 		playerBulletAndEnemyContactHandler);
+	// ©‹@‚Æ“G‚ÌÕ“Ë”»’è.
+	detectCollision(
+		&sprPlayer, &sprPlayer + 1,
+		std::begin(enemyList), std::end(enemyList),
+		playerAndEnemyContactHandler);
 }
 
 /**
