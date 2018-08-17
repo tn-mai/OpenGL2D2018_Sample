@@ -65,6 +65,7 @@ void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
 bool detectCollision(const Rect*, const Rect*);
 void initializeActorList(Actor*, Actor*);
+void updateActorList(Actor*, Actor*, float);
 
 /**
 * プログラムのエントリーポイント.
@@ -286,24 +287,9 @@ void update(GLFWEW::WindowRef window)
 		}
 	}
 #endif
-	// 敵の更新.
-	for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
-		if (i->health > 0) {
-			i->spr.Update(deltaTime);
-			if (i->spr.Tweener()->IsFinished()) {
-				i->health = 0;
-			}
-		}
-	}
-	// 自機の弾の更新.
-	for (Actor* i = std::begin(playerBulletList); i != std::end(playerBulletList); ++i) {
-		if (i->health > 0) {
-			i->spr.Update(deltaTime);
-			if (i->spr.Tweener()->IsFinished()) {
-				i->health = 0;
-			}
-		}
-	}
+	// Actorの更新.
+	updateActorList(std::begin(enemyList), std::end(enemyList), deltaTime);
+	updateActorList(std::begin(playerBulletList), std::end(playerBulletList), deltaTime);
 
 	// 自機の弾と敵の衝突判定.
 	for (Actor* bullet = std::begin(playerBulletList); bullet != std::end(playerBulletList); ++bullet) {
@@ -391,5 +377,24 @@ void initializeActorList(Actor* first, Actor* last)
 {
 	for (Actor* i = first; i != last; ++i) {
 		i->health = 0;
+	}
+}
+
+/**
+* Actorの配列を更新する.
+*
+* @param  first      更新する配列の先頭.
+* @param  last       更新する配列の終端.
+* @param  deltaTime 前回の更新からの経過時間.
+*/
+void updateActorList(Actor* first, Actor* last, float deltaTime)
+{
+	for (Actor* i = first; i != last; ++i) {
+		if (i->health > 0) {
+			i->spr.Update(deltaTime);
+			if (i->spr.Tweener()->IsFinished()) {
+				i->health = 0;
+			}
+		}
 	}
 }
