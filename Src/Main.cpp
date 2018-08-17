@@ -303,6 +303,7 @@ void render(GLFWEW::WindowRef window)
 	renderer.AddVertices(sprPlayer);
 	renderActorList(std::begin(enemyList), std::end(enemyList));
 	renderActorList(std::begin(playerBulletList), std::end(playerBulletList));
+	renderActorList(std::begin(effectList), std::end(effectList));
 	renderer.EndUpdate();
 	renderer.Draw(glm::vec2(windowWidth, windowHeight));
 
