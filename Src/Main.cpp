@@ -4,6 +4,7 @@
 #include "GLFWEW.h"
 #include "Texture.h"
 #include "Sprite.h"
+#include "Font.h"
 #include <random>
 
 const char windowTitle[] = "OpenGL2D 2018"; // タイトルバーに表示される文章.
@@ -23,6 +24,7 @@ struct Actor
 };
 
 SpriteRenderer renderer; // スプライトを描画するオブジェクト.
+FontRenderer fontRenderer; // フォント描画用変数.
 Sprite sprBackground; // 背景用スプライト.
 Sprite sprPlayer;     // 自機用スプライト.
 
@@ -71,6 +73,12 @@ int main()
 		return 1;
 	}
 	if (!renderer.Initialize(1024)) {
+		return 1;
+	}
+	if (!fontRenderer.Initialize(1024, glm::vec2(windowWidth, windowHeight))) {
+		return 1;
+	}
+	if (!fontRenderer.LoadFromFile("Res/Font/makinas_scrap.fnt")) {
 		return 1;
 	}
 
@@ -289,6 +297,15 @@ void render(GLFWEW::WindowRef window)
 	}
 	renderer.EndUpdate();
 	renderer.Draw(glm::vec2(windowWidth, windowHeight));
+
+	// 文字列を表示する.
+	fontRenderer.BeginUpdate();
+	char str[9];
+	snprintf(str, sizeof(str), "%08d", score);
+	fontRenderer.AddString(glm::vec2(-100, 300), str);
+	fontRenderer.EndUpdate();
+	fontRenderer.Draw();
+
 	window.SwapBuffers();
 }
 
