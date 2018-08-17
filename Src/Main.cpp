@@ -27,7 +27,7 @@ struct Actor
 SpriteRenderer renderer; // スプライトを描画するオブジェクト.
 FontRenderer fontRenderer; // フォント描画用変数.
 Sprite sprBackground; // 背景用スプライト.
-Sprite sprPlayer;     // 自機用スプライト.
+Actor sprPlayer;     // 自機用スプライト.
 
 glm::vec3 playerVelocity; // 自機の移動速度.
 
@@ -118,8 +118,10 @@ int main()
 
 	//スプライトに画像を設定.
 	sprBackground = Sprite("Res/UnknownPlanet.png");
-	sprPlayer = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
-	sprPlayer.Animator(FrameAnimation::Animate::Create(tlPlayer));
+	sprPlayer.spr = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
+	sprPlayer.spr.Animator(FrameAnimation::Animate::Create(tlPlayer));
+	sprPlayer.collisionShape = Rect(-24, -8, 48, 16);
+	sprPlayer.health = 1;
 
 	initializeActorList(std::begin(enemyList), std::end(enemyList));
 	initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
@@ -153,37 +155,41 @@ void processInput(GLFWEW::WindowRef window)
 {
 	window.Update();
 
-	// 自機の速度を設定する.
-	const GamePad gamepad = window.GetGamePad();
-	if (gamepad.buttons & GamePad::DPAD_UP) {
-		playerVelocity.y = 1;
-	} else if (gamepad.buttons & GamePad::DPAD_DOWN) {
-		playerVelocity.y = -1;
+	if (sprPlayer.health <= 0) {
+		playerVelocity = glm::vec3(0, 0, 0);
 	} else {
-		playerVelocity.y = 0;
-	}
-	if (gamepad.buttons & GamePad::DPAD_RIGHT) {
-		playerVelocity.x = 1;
-	} else if (gamepad.buttons & GamePad::DPAD_LEFT) {
-		playerVelocity.x = -1;
-	} else {
-		playerVelocity.x = 0;
-	}
-	if (playerVelocity.x || playerVelocity.y) {
-		playerVelocity = glm::normalize(playerVelocity) * 400.0f;
-	}
+		// 自機の速度を設定する.
+		const GamePad gamepad = window.GetGamePad();
+		if (gamepad.buttons & GamePad::DPAD_UP) {
+			playerVelocity.y = 1;
+		} else if (gamepad.buttons & GamePad::DPAD_DOWN) {
+			playerVelocity.y = -1;
+		} else {
+			playerVelocity.y = 0;
+		}
+		if (gamepad.buttons & GamePad::DPAD_RIGHT) {
+			playerVelocity.x = 1;
+		} else if (gamepad.buttons & GamePad::DPAD_LEFT) {
+			playerVelocity.x = -1;
+		} else {
+			playerVelocity.x = 0;
+		}
+		if (playerVelocity.x || playerVelocity.y) {
+			playerVelocity = glm::normalize(playerVelocity) * 400.0f;
+		}
 
-	// 弾の発射.
-	if (gamepad.buttonDown & GamePad::A) {
-		Actor* bullet = findAvailableActor(std::begin(playerBulletList), std::end(playerBulletList));
-		// 空いている構造体が見つかったら、それを使って弾を発射する.
-		if (bullet != nullptr) {
-			bullet->spr = Sprite("Res/Objects.png", sprPlayer.Position(), Rect(64, 0, 32, 16));
-			bullet->spr.Tweener(TweenAnimation::Animate::Create(
-				TweenAnimation::MoveBy::Create(1, glm::vec3(1200, 0, 0),
-				TweenAnimation::EasingType::Linear)));
-			bullet->collisionShape = Rect(-8, -4, 16, 8);
-			bullet->health = 4;
+		// 弾の発射.
+		if (gamepad.buttonDown & GamePad::A) {
+			Actor* bullet = findAvailableActor(std::begin(playerBulletList), std::end(playerBulletList));
+			// 空いている構造体が見つかったら、それを使って弾を発射する.
+			if (bullet != nullptr) {
+				bullet->spr = Sprite("Res/Objects.png", sprPlayer.spr.Position(), Rect(64, 0, 32, 16));
+				bullet->spr.Tweener(TweenAnimation::Animate::Create(
+					TweenAnimation::MoveBy::Create(1, glm::vec3(1200, 0, 0),
+					TweenAnimation::EasingType::Linear)));
+				bullet->collisionShape = Rect(-8, -4, 16, 8);
+				bullet->health = 4;
+			}
 		}
 	}
 }
@@ -198,24 +204,25 @@ void update(GLFWEW::WindowRef window)
 	const float deltaTime = window.DeltaTime(); // 前回の更新からの経過時間(秒).
 
 	// 自機の移動.
-	if (playerVelocity.x || playerVelocity.y) {
-		glm::vec3 newPos = sprPlayer.Position() + playerVelocity * deltaTime;
-		// 自機の移動範囲を画面内に制限する.
-		const Rect playerRect = sprPlayer.Rectangle();
-		if (newPos.x < -0.5f * (windowWidth - playerRect.size.x)) {
-			newPos.x = -0.5f * (windowWidth - playerRect.size.x);
-		} else if (newPos.x > 0.5f * (windowWidth - playerRect.size.x)) {
-			newPos.x = 0.5f * (windowWidth - playerRect.size.x);
+	if (sprPlayer.health > 0) {
+		if (playerVelocity.x || playerVelocity.y) {
+			glm::vec3 newPos = sprPlayer.spr.Position() + playerVelocity * deltaTime;
+			// 自機の移動範囲を画面内に制限する.
+			const Rect playerRect = sprPlayer.spr.Rectangle();
+			if (newPos.x < -0.5f * (windowWidth - playerRect.size.x)) {
+				newPos.x = -0.5f * (windowWidth - playerRect.size.x);
+			} else if (newPos.x > 0.5f * (windowWidth - playerRect.size.x)) {
+				newPos.x = 0.5f * (windowWidth - playerRect.size.x);
+			}
+			if (newPos.y < -0.5f * (windowHeight - playerRect.size.y)) {
+				newPos.y = -0.5f * (windowHeight - playerRect.size.y);
+			} else if (newPos.y > 0.5f * (windowHeight - playerRect.size.y)) {
+				newPos.y = 0.5f * (windowHeight - playerRect.size.y);
+			}
+			sprPlayer.spr.Position(newPos);
 		}
-		if (newPos.y < -0.5f * (windowHeight - playerRect.size.y)) {
-			newPos.y = -0.5f * (windowHeight - playerRect.size.y);
-		} else if (newPos.y > 0.5f * (windowHeight - playerRect.size.y)) {
-			newPos.y = 0.5f * (windowHeight - playerRect.size.y);
-		}
-		sprPlayer.Position(newPos);
+		sprPlayer.spr.Update(deltaTime);
 	}
-	sprPlayer.Update(deltaTime);
-
 	// 敵の出現.
 #if 1
 	const TiledMap::Layer& tiledMapLayer = enemyMap.GetLayer(0);
@@ -314,7 +321,9 @@ void render(GLFWEW::WindowRef window)
 {
 	renderer.BeginUpdate();
 	renderer.AddVertices(sprBackground);
-	renderer.AddVertices(sprPlayer);
+	if (sprPlayer.health > 0) {
+		renderer.AddVertices(sprPlayer.spr);
+	}
 	renderActorList(std::begin(enemyList), std::end(enemyList));
 	renderActorList(std::begin(playerBulletList), std::end(playerBulletList));
 	renderActorList(std::begin(effectList), std::end(effectList));
