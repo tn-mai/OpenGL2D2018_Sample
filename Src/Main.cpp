@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "Sprite.h"
 #include "Font.h"
+#include "TiledMap.h"
 #include <random>
 
 const char windowTitle[] = "OpenGL2D 2018"; // タイトルバーに表示される文章.
@@ -34,6 +35,11 @@ Actor enemyList[128]; // 敵のリスト.
 Actor playerBulletList[128]; // 自機の弾のリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
+
+// 敵の出現を制御するためのデータ.
+TiledMap enemyMap;
+float mapCurrentPosX;
+float mapProcessedX;
 
 // 敵のアニメーション.
 const FrameAnimation::KeyFrame enemyKeyFrames[] = {
@@ -104,6 +110,11 @@ int main()
 
 	enemyGenerationTimer = 2;
 	score = 0;
+
+	// 敵配置マップを読み込む.
+	enemyMap.Load("Res/EnemyMap.json");
+	mapCurrentPosX = windowWidth;
+	mapProcessedX = windowWidth;
 
 	// ゲームループ.
 	while (!window.ShouldClose()) {
@@ -196,6 +207,53 @@ void update(GLFWEW::WindowRef window)
 	}
 	sprPlayer.Update(deltaTime);
 
+	// 敵の出現.
+#if 1
+	const TiledMap::Layer& tiledMapLayer = enemyMap.GetLayer(0);
+	const glm::vec2 tileSize = enemyMap.GetTileSet(tiledMapLayer.tilesetNo).size;
+	// 敵配置マップ参照位置の更新.
+	const float enemyMapScrollSpeed = 100; // 更新速度.
+	mapCurrentPosX += enemyMapScrollSpeed * deltaTime;
+	if (mapCurrentPosX >= tiledMapLayer.size.x * tileSize.x) {
+		// 終端を超えたら先頭にループ.
+		mapCurrentPosX = 0;
+		mapProcessedX = 0;
+	}
+	// 次の列に到達したらデータを読む.
+	if (mapCurrentPosX - mapProcessedX >= tileSize.x) {
+		mapProcessedX += tileSize.x;
+		const int mapX = static_cast<int>(mapProcessedX / tileSize.x);
+		for (int mapY = 0; mapY < tiledMapLayer.size.y; ++mapY) {
+			const int enemyId = 256; // 敵とみなすタイルID.
+			if (tiledMapLayer.At(mapY, mapX) == enemyId) {
+				// 空いている(破壊されている)敵構造体を検索.
+				Actor* enemy = nullptr;
+				for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
+					if (i->health <= 0) {
+						enemy = i;
+						break;
+					}
+				}
+				// 空いている構造体が見つかったら、それを使って敵を出現させる.
+				if (enemy != nullptr) {
+					const float y = windowHeight * 0.5f - static_cast<float>(mapY * tileSize.x);
+					enemy->spr = Sprite("Res/Objects.png", glm::vec3(0.5f * windowWidth, y, 0), Rect(480, 0, 32, 32));
+					enemy->spr.Animator(FrameAnimation::Animate::Create(tlEnemy));
+					namespace TA = TweenAnimation;
+					TA::SequencePtr seq = TA::Sequence::Create(4);
+					seq->Add(TA::MoveBy::Create(1, glm::vec3(0, 100, 0), TA::EasingType::EaseInOut, TA::Target::Y));
+					seq->Add(TA::MoveBy::Create(1, glm::vec3(0, -100, 0), TA::EasingType::EaseInOut, TA::Target::Y));
+					TA::ParallelizePtr par = TA::Parallelize::Create(1);
+					par->Add(seq);
+					par->Add(TA::MoveBy::Create(8, glm::vec3(-1000, 0, 0), TA::EasingType::Linear, TA::Target::X));
+					enemy->spr.Tweener(TA::Animate::Create(par));
+					enemy->collisionShape = Rect(-16, -16, 32, 32);
+					enemy->health = 2;
+				}
+			}
+		}
+	}
+#else
 	// 出現までの時間が0以下になったら敵を出現させる.
 	enemyGenerationTimer -= deltaTime;
 	if (enemyGenerationTimer <= 0) {
@@ -232,6 +290,7 @@ void update(GLFWEW::WindowRef window)
 			enemyGenerationTimer = time_distribution(random);
 		}
 	}
+#endif
 	// 敵の更新.
 	for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
 		if (i->health > 0) {
