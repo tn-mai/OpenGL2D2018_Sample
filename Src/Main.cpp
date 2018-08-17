@@ -216,14 +216,7 @@ void update(GLFWEW::WindowRef window)
 		for (int mapY = 0; mapY < tiledMapLayer.size.y; ++mapY) {
 			const int enemyId = 256; // “G‚Æ‚Ý‚È‚·ƒ^ƒCƒ‹ID.
 			if (tiledMapLayer.At(mapY, mapX) == enemyId) {
-				// ‹ó‚¢‚Ä‚¢‚é(”j‰ó‚³‚ê‚Ä‚¢‚é)“G\‘¢‘Ì‚ðŒŸõ.
-				Actor* enemy = nullptr;
-				for (Actor* i = std::begin(enemyList); i != std::end(enemyList); ++i) {
-					if (i->health <= 0) {
-						enemy = i;
-						break;
-					}
-				}
+				Actor* enemy = findAvailableActor(std::begin(enemyList), std::end(enemyList));
 				// ‹ó‚¢‚Ä‚¢‚é\‘¢‘Ì‚ªŒ©‚Â‚©‚Á‚½‚çA‚»‚ê‚ðŽg‚Á‚Ä“G‚ðoŒ»‚³‚¹‚é.
 				if (enemy != nullptr) {
 					const float y = windowHeight * 0.5f - static_cast<float>(mapY * tileSize.x);
