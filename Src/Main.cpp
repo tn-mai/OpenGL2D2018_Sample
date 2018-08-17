@@ -61,6 +61,16 @@ const FrameAnimation::KeyFrame playerKeyFrames[] = {
 };
 FrameAnimation::TimelinePtr tlPlayer;
 
+// 爆発アニメーション.
+const FrameAnimation::KeyFrame blastKeyFrames[] = {
+	{ 0 / 60.0f, glm::vec2(416, 0), glm::vec2(32, 32) },
+	{ 5 / 60.0f, glm::vec2(416, 32), glm::vec2(32, 32) },
+	{ 10 / 60.0f, glm::vec2(416, 64), glm::vec2(32, 32) },
+	{ 15 / 60.0f, glm::vec2(416, 96), glm::vec2(32, 32) },
+	{ 20 / 60.0f, glm::vec2(416, 96), glm::vec2(32, 32) },
+};
+FrameAnimation::TimelinePtr tlBlast;
+
 /*
 * プロトタイプ宣言.
 */
@@ -104,6 +114,7 @@ int main()
 	// アニメーション・タイムラインの作成.
 	tlEnemy = FrameAnimation::Timeline::Create(enemyKeyFrames);
 	tlPlayer = FrameAnimation::Timeline::Create(playerKeyFrames);
+	tlBlast = FrameAnimation::Timeline::Create(blastKeyFrames);
 
 	//スプライトに画像を設定.
 	sprBackground = Sprite("Res/UnknownPlanet.png");
@@ -454,5 +465,15 @@ void playerBulletAndEnemyContactHandler(Actor* bullet, Actor* enemy)
 	const int tmp = bullet->health;
 	bullet->health -= enemy->health;
 	enemy->health -= tmp;
-	score += 100; // 敵を破壊したら得点を増やす.
+	if (enemy->health <= 0) {
+		score += 100;
+		Actor* blast = findAvailableActor(std::begin(effectList), std::end(effectList));
+		if (blast != nullptr) {
+			blast->spr = Sprite("Res/Objects.png", enemy->spr.Position());
+			blast->spr.Animator(FrameAnimation::Animate::Create(tlBlast));
+			namespace TA = TweenAnimation;
+			blast->spr.Tweener(TA::Animate::Create(TA::Rotation::Create(20 / 60.0f, 1.5f)));
+			blast->health = 1;
+		}
+	}
 }
