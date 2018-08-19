@@ -37,6 +37,33 @@ Actor effectList[128]; // 爆発などの特殊効果用スプライトのリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
 
+// ゲームの状態.
+const int gamestateTitle = 0; // タイトル画面の場面ID.
+const int gamestateMain = 1; // ゲーム画面の場面ID.
+int gamestate; // 実行中の場面ID.
+
+/**
+* タイトル画面用の構造体.
+*
+* タイトル画面で使用する変数などを格納する.
+*/
+struct TitleScene
+{
+	Sprite bg;
+	Sprite logo;
+	const int modeStart = 0; // タイトル表示待ちモード.
+	const int modeTitle = 1; // 入力受付モード.
+	const int modeNextState = 2; // ゲーム開始待ちモード.
+	int mode; // 実行中のモード.
+	float timer; // モード切り替えで使用するタイマー.
+};
+bool initialize(TitleScene*);
+void finalize(TitleScene*);
+void processInput(GLFWEW::WindowRef, TitleScene*);
+void update(GLFWEW::WindowRef, TitleScene*);
+void render(GLFWEW::WindowRef, TitleScene*);
+TitleScene titleScene;
+
 // 敵の出現を制御するためのデータ.
 TiledMap enemyMap;
 float mapCurrentPosX;
@@ -117,24 +144,9 @@ int main()
 	tlPlayer = FrameAnimation::Timeline::Create(playerKeyFrames);
 	tlBlast = FrameAnimation::Timeline::Create(blastKeyFrames);
 
-	//スプライトに画像を設定.
-	sprBackground = Sprite("Res/UnknownPlanet.png");
-	sprPlayer.spr = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
-	sprPlayer.spr.Animator(FrameAnimation::Animate::Create(tlPlayer));
-	sprPlayer.collisionShape = Rect(-24, -8, 48, 16);
-	sprPlayer.health = 1;
-
-	initializeActorList(std::begin(enemyList), std::end(enemyList));
-	initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
-	initializeActorList(std::begin(effectList), std::end(effectList));
-
-	enemyGenerationTimer = 2;
-	score = 0;
-
-	// 敵配置マップを読み込む.
-	enemyMap.Load("Res/EnemyMap.json");
-	mapCurrentPosX = windowWidth;
-	mapProcessedX = windowWidth;
+	// タイトル画面を初期化する.
+	gamestate = gamestateTitle;
+	initialize(&titleScene);
 
 	// ゲームループ.
 	while (!window.ShouldClose()) {
@@ -154,6 +166,11 @@ int main()
 */
 void processInput(GLFWEW::WindowRef window)
 {
+	if (gamestate == gamestateTitle) {
+		processInput(window, &titleScene);
+		return;
+	}
+
 	window.Update();
 
 	if (sprPlayer.health <= 0) {
@@ -202,6 +219,18 @@ void processInput(GLFWEW::WindowRef window)
 */
 void update(GLFWEW::WindowRef window)
 {
+	if (gamestate == gamestateTitle) {
+		update(window, &titleScene);
+		return;
+	} else if (gamestate == gamestateMain) {
+		// 自機が破壊されていたらタイトル画面に戻る.
+		if (sprPlayer.health <= 0) {
+			gamestate = gamestateTitle;
+			initialize(&titleScene);
+			return;
+		}
+	}
+
 	const float deltaTime = window.DeltaTime(); // 前回の更新からの経過時間(秒).
 
 	// 自機の移動.
@@ -325,6 +354,11 @@ void update(GLFWEW::WindowRef window)
 */
 void render(GLFWEW::WindowRef window)
 {
+	if (gamestate == gamestateTitle) {
+		render(window, &titleScene);
+		return;
+	}
+
 	renderer.BeginUpdate();
 	renderer.AddVertices(sprBackground);
 	if (sprPlayer.health > 0) {
@@ -527,4 +561,130 @@ void playerAndEnemyContactHandler(Actor* player, Actor* enemy)
 			blast->health = 1;
 		}
 	}
+}
+
+/**
+* タイトル画面用の構造体の初期設定を行う.
+*
+* @param scene     タイトル画面用構造体のポインタ.
+*
+* @retval true  初期化成功.
+* @retval false 初期化失敗.
+*/
+bool initialize(TitleScene* scene)
+{
+	scene->bg = Sprite("Res/UnknownPlanet.png");
+	scene->logo = Sprite("Res/Title.png", glm::vec3(0, 100, 0));
+	scene->mode = scene->modeStart;
+	scene->timer = 0.5f; // 入力を受け付けない期間(秒).
+	return true;
+}
+
+/**
+* タイトル画面の終了処理を行う.
+*
+* @param scene  タイトル画面用構造体のポインタ.
+*/
+void finalize(TitleScene* scene)
+{
+	scene->bg = Sprite();
+	scene->logo = Sprite();
+}
+
+/**
+* タイトル画面のプレイヤー入力を処理する.
+*
+* @param window ゲームを管理するウィンドウ.
+* @param scene  タイトル画面用構造体のポインタ.
+*/
+void processInput(GLFWEW::WindowRef window, TitleScene* scene)
+{
+	window.Update();
+	// 入力受付モードになるまでなにもしない.
+	if (scene->mode != scene->modeTitle) {
+		return;
+	}
+	// AまたはSTARTボタンが押されたら、ゲーム開始待ちモードに移る.
+	const GamePad gamepad = window.GetGamePad();
+	if (gamepad.buttonDown & (GamePad::A | GamePad::START)) {
+		scene->mode = scene->modeNextState;
+		scene->timer = 2.0f;
+	}
+}
+
+/**
+* タイトル画面を更新する.
+*
+* @param window ゲームを管理するウィンドウ.
+* @param scene  タイトル画面用構造体のポインタ.
+*/
+void update(GLFWEW::WindowRef window, TitleScene* scene)
+{
+	const float deltaTime = window.DeltaTime();
+
+	scene->bg.Update(deltaTime);
+	scene->logo.Update(deltaTime);
+
+	// タイマーが0以下になるまでカウントダウン.
+	if (scene->timer > 0) {
+		scene->timer -= deltaTime;
+		return;
+	}
+
+	if (scene->mode == scene->modeStart) {
+		scene->mode = scene->modeTitle;
+	} else if (scene->mode == scene->modeNextState) {
+		finalize(scene); // タイトル画面の後始末.
+		gamestate = gamestateMain;
+
+		// ゲームの初期設定を行う.
+
+		//スプライトに画像を設定.
+		sprBackground = Sprite("Res/UnknownPlanet.png");
+		sprPlayer.spr = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
+		sprPlayer.spr.Animator(FrameAnimation::Animate::Create(tlPlayer));
+		sprPlayer.collisionShape = Rect(-24, -8, 48, 16);
+		sprPlayer.health = 1;
+
+		initializeActorList(std::begin(enemyList), std::end(enemyList));
+		initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
+		initializeActorList(std::begin(effectList), std::end(effectList));
+
+		enemyGenerationTimer = 2;
+		score = 0;
+
+		// 敵配置マップを読み込む.
+		enemyMap.Load("Res/EnemyMap.json");
+		mapCurrentPosX = windowWidth;
+		mapProcessedX = windowWidth;
+	}
+}
+
+/**
+* タイトル画面を描画する.
+*
+* @param window ゲームを管理するウィンドウ.
+* @param scene  タイトル画面用構造体のポインタ.
+*/
+void render(GLFWEW::WindowRef window, TitleScene* scene)
+{
+	renderer.BeginUpdate();
+	renderer.AddVertices(scene->bg);
+	renderer.AddVertices(scene->logo);
+	renderer.EndUpdate();
+	renderer.Draw(glm::vec2(windowWidth, windowHeight));
+
+	fontRenderer.BeginUpdate();
+	if (scene->mode == scene->modeTitle) {
+		fontRenderer.AddString(glm::vec2(-80, -100), "START");
+	} else if (scene->mode == scene->modeNextState) {
+		// ゲーム開始待ちのときは文字を点滅させる.
+		if ((int)(scene->timer * 10) % 2) {
+			fontRenderer.AddString(glm::vec2(-80, -100), "START");
+		}
+	}
+	fontRenderer.EndUpdate();
+	fontRenderer.Draw();
+
+	window.SwapBuffers();
 }
