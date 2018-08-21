@@ -2,6 +2,7 @@
 * @file Main.cpp
 */
 #include "GameOverScene.h"
+#include "GameData.h"
 #include "Actor.h"
 #include "GLFWEW.h"
 #include "Texture.h"
@@ -12,8 +13,6 @@
 #include <random>
 
 const char windowTitle[] = "OpenGL2D 2018"; // タイトルバーに表示される文章.
-const int windowWidth = 800; // ウィンドウの描画領域の幅.
-const int windowHeight = 600; // ウィンドウの描画領域の高さ.
 
 std::mt19937 random; // 乱数を発生させる変数(乱数エンジン).
 
@@ -37,9 +36,6 @@ Audio::SoundPtr sePlayerShot;
 Audio::SoundPtr seBlast;
 
 // ゲームの状態.
-const int gamestateTitle = 0; // タイトル画面の場面ID.
-const int gamestateMain = 1; // ゲーム画面の場面ID.
-const int gamestateGameOver = 2; // ゲームオーバー画面の場面ID.
 int gamestate; // 実行中の場面ID.
 
 /**
