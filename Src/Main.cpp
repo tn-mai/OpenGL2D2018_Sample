@@ -606,6 +606,7 @@ void playerAndEnemyContactHandler(Actor* player, Actor* enemy)
 			blast->spr.Tweener(TA::Animate::Create(TA::Rotation::Create(20 / 60.0f, 1.5f)));
 			blast->spr.Scale(glm::vec2(2, 2)); // Ž©‹@‚Ì”š”­‚Í­‚µ‘å‚«‚ß‚É‚·‚é.
 			blast->health = 1;
+			seBlast->Play();// ”š”­‰¹‚ðÄ¶.
 		}
 	}
 }
