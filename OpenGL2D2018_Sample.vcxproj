@@ -181,6 +181,7 @@ if not exist "$(TargetDir)glew32d.dll" (
     <ClInclude Include="Src\Actor.h" />
     <ClInclude Include="Src\GameData.h" />
     <ClInclude Include="Src\GameOverScene.h" />
+    <ClInclude Include="Src\TitleScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

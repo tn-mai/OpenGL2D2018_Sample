@@ -1,6 +1,7 @@
 /**
 * @file Main.cpp
 */
+#include "TitleScene.h"
 #include "GameOverScene.h"
 #include "GameData.h"
 #include "Actor.h"
