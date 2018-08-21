@@ -2,6 +2,7 @@
 * @file GameOverScene.cpp
 */
 #include "GameOverScene.h"
+#include "TitleScene.h"
 #include "GameData.h"
 
 /**
