@@ -6,6 +6,7 @@
 #include "Sprite.h"
 #include "Font.h"
 #include "TiledMap.h"
+#include "Audio.h"
 #include <random>
 
 const char windowTitle[] = "OpenGL2D 2018"; // タイトルバーに表示される文章.
@@ -37,6 +38,11 @@ Actor effectList[128]; // 爆発などの特殊効果用スプライトのリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
 float timer; // シーン切り替えで使用するタイマー.
+
+// 音声制御用変数.
+Audio::SoundPtr bgm;
+Audio::SoundPtr sePlayerShot;
+Audio::SoundPtr seBlast;
 
 // ゲームの状態.
 const int gamestateTitle = 0; // タイトル画面の場面ID.
@@ -141,6 +147,11 @@ int main()
 	if (!window.Initialize(windowWidth, windowHeight, windowTitle)) {
 		return 1;
 	}
+	// 音声再生システムの初期化.
+	Audio::EngineRef audio = Audio::Engine::Instance();
+	if (!audio.Initialize()) {
+		return 1;
+	}
 	if (!Texture::Initialize()) {
 		return 1;
 	}
@@ -170,9 +181,11 @@ int main()
 		processInput(window);
 		update(window);
 		render(window);
+		audio.Update();
 	}
 
 	Texture::Finalize();
+	audio.Destroy();
 	return 0;
 }
 
@@ -227,6 +240,7 @@ void processInput(GLFWEW::WindowRef window)
 					TweenAnimation::EasingType::Linear)));
 				bullet->collisionShape = Rect(-8, -4, 16, 8);
 				bullet->health = 4;
+				sePlayerShot->Play(); // 弾の発射音を再生.
 			}
 		}
 	}
@@ -250,6 +264,7 @@ void update(GLFWEW::WindowRef window)
 			if (timer > 0) {
 				timer -= deltaTime;
 			} else {
+				bgm->Stop(); // BGMを停止する.
 				gamestate = gamestateGameOver;
 				initialize(&gameOverScene);
 				return;
@@ -553,6 +568,7 @@ void playerBulletAndEnemyContactHandler(Actor* bullet, Actor* enemy)
 			namespace TA = TweenAnimation;
 			blast->spr.Tweener(TA::Animate::Create(TA::Rotation::Create(20 / 60.0f, 1.5f)));
 			blast->health = 1;
+			seBlast->Play();// 爆発音を再生.
 		}
 	}
 }
@@ -640,6 +656,7 @@ void processInput(GLFWEW::WindowRef window, TitleScene* scene)
 	if (gamepad.buttonDown & (GamePad::A | GamePad::START)) {
 		scene->mode = scene->modeNextState;
 		scene->timer = 2.0f;
+		Audio::Engine::Instance().Prepare("Res/Audio/Start.xwm")->Play();
 	}
 }
 
@@ -689,6 +706,14 @@ void update(GLFWEW::WindowRef window, TitleScene* scene)
 		enemyMap.Load("Res/EnemyMap.json");
 		mapCurrentPosX = windowWidth;
 		mapProcessedX = windowWidth;
+
+		// 音声を準備する.
+		Audio::EngineRef audio = Audio::Engine::Instance();
+		seBlast = audio.Prepare("Res/Audio/Blast.xwm");
+		sePlayerShot = audio.Prepare("Res/Audio/PlayerShot.xwm");
+		bgm = audio.Prepare("Res/Audio/Neolith.xwm");
+		// BGMをループ再生する.
+		bgm->Play(Audio::Flag_Loop);
 	}
 }
 
