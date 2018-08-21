@@ -118,13 +118,6 @@ FrameAnimation::TimelinePtr tlBlast;
 void processInput(GLFWEW::WindowRef);
 void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
-bool detectCollision(const Rect*, const Rect*);
-void initializeActorList(Actor*, Actor*);
-void updateActorList(Actor*, Actor*, float);
-void renderActorList(const Actor*, const Actor*);
-Actor* findAvailableActor(Actor*, Actor*);
-using CollisionHandlerType = void(*)(Actor*, Actor*); // è’ìÀèàóùä÷êîÇÃå^.
-void detectCollision(Actor*, Actor*, Actor*, Actor*, CollisionHandlerType);
 void playerBulletAndEnemyContactHandler(Actor*, Actor*);
 void playerAndEnemyContactHandler(Actor*, Actor*);
 

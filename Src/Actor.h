@@ -15,3 +15,10 @@ struct Actor
 	Rect collisionShape; // Õ“Ë”»’è‚ÌˆÊ’u‚Æ‘å‚«‚³.
 	int health; // ‘Ï‹v—Í(0ˆÈ‰º‚È‚ç”j‰ó‚³‚ê‚Ä‚¢‚é).
 };
+bool detectCollision(const Rect*, const Rect*);
+void initializeActorList(Actor*, Actor*);
+void updateActorList(Actor*, Actor*, float);
+void renderActorList(const Actor*, const Actor*);
+Actor* findAvailableActor(Actor*, Actor*);
+using CollisionHandlerType = void(*)(Actor*, Actor*); // Õ“Ëˆ—ŠÖ”‚ÌŒ^.
+void detectCollision(Actor*, Actor*, Actor*, Actor*, CollisionHandlerType);
