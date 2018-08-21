@@ -161,6 +161,7 @@ if not exist "$(TargetDir)glew32d.dll" (
     <ClCompile Include="Src\Actor.cpp" />
     <ClCompile Include="Src\GameOverScene.cpp" />
     <ClCompile Include="Src\Main.cpp" />
+    <ClCompile Include="Src\TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\OpenGL2D2018\Lib\Easy\Audio.h" />
