@@ -56,6 +56,9 @@
     <ClCompile Include="Src\Main.cpp">
       <Filter>Src</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Actor.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\OpenGL2D2018\Lib\Easy\Audio.h">
