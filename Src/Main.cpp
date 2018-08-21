@@ -36,6 +36,7 @@ Actor playerBulletList[128]; // 自機の弾のリスト.
 Actor effectList[128]; // 爆発などの特殊効果用スプライトのリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
+float timer; // シーン切り替えで使用するタイマー.
 
 // ゲームの状態.
 const int gamestateTitle = 0; // タイトル画面の場面ID.
@@ -238,22 +239,26 @@ void processInput(GLFWEW::WindowRef window)
 */
 void update(GLFWEW::WindowRef window)
 {
+	const float deltaTime = window.DeltaTime(); // 前回の更新からの経過時間(秒).
+
 	if (gamestate == gamestateTitle) {
 		update(window, &titleScene);
 		return;
 	} else if (gamestate == gamestateMain) {
 		// 自機が破壊されていたらゲームオーバー画面を表示する.
 		if (sprPlayer.health <= 0) {
-			gamestate = gamestateGameOver;
-			initialize(&gameOverScene);
-			return;
+			if (timer > 0) {
+				timer -= deltaTime;
+			} else {
+				gamestate = gamestateGameOver;
+				initialize(&gameOverScene);
+				return;
+			}
 		}
 	} else if (gamestate == gamestateGameOver) {
 		update(window, &gameOverScene);
 		return;
 	}
-
-	const float deltaTime = window.DeltaTime(); // 前回の更新からの経過時間(秒).
 
 	// 自機の移動.
 	if (sprPlayer.health > 0) {
@@ -575,6 +580,7 @@ void playerAndEnemyContactHandler(Actor* player, Actor* enemy)
 		}
 	}
 	if (player->health <= 0) {
+		timer = 2;
 		Actor* blast = findAvailableActor(
 			std::begin(effectList), std::end(effectList));
 		if (blast != nullptr) {
@@ -677,6 +683,7 @@ void update(GLFWEW::WindowRef window, TitleScene* scene)
 
 		enemyGenerationTimer = 2;
 		score = 0;
+		timer = 0;
 
 		// 敵配置マップを読み込む.
 		enemyMap.Load("Res/EnemyMap.json");
