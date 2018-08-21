@@ -159,6 +159,7 @@ if not exist "$(TargetDir)glew32d.dll" (
     <ClCompile Include="..\OpenGL2D2018\Lib\Easy\TweenAnimation.cpp" />
     <ClCompile Include="..\OpenGL2D2018\Lib\Easy\UniformBuffer.cpp" />
     <ClCompile Include="Src\Actor.cpp" />
+    <ClCompile Include="Src\GameOverScene.cpp" />
     <ClCompile Include="Src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
