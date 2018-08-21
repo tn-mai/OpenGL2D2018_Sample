@@ -112,5 +112,8 @@
     <ClInclude Include="Src\GameData.h">
       <Filter>Src</Filter>
     </ClInclude>
+    <ClInclude Include="Src\GameOverScene.h">
+      <Filter>Src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

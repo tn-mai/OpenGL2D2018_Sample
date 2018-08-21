@@ -1,6 +1,7 @@
 /**
 * @file Main.cpp
 */
+#include "GameOverScene.h"
 #include "Actor.h"
 #include "GLFWEW.h"
 #include "Texture.h"
@@ -63,19 +64,7 @@ void update(GLFWEW::WindowRef, TitleScene*);
 void render(GLFWEW::WindowRef, TitleScene*);
 TitleScene titleScene;
 
-/**
-* ゲームオーバー画面で使用する構造体.
-*/
-struct GameOverScene
-{
-	Sprite bg;
-	float timer;
-};
-bool initialize(GameOverScene*);
-void finalize(GameOverScene*);
-void processInput(GLFWEW::WindowRef, GameOverScene*);
-void update(GLFWEW::WindowRef, GameOverScene*);
-void render(GLFWEW::WindowRef, GameOverScene*);
+
 GameOverScene gameOverScene;
 
 // 敵の出現を制御するためのデータ.
