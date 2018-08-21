@@ -2,8 +2,7 @@
 * @file Actor.cpp
 */
 #include "Actor.h"
-
-extern SpriteRenderer renderer;
+#include "GameData.h"
 
 /**
 * 2‚Â‚Ì’·•ûŒ`‚ÌÕ“Ëó‘Ô‚ğ’²‚×‚é.
