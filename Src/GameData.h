@@ -19,7 +19,9 @@ extern int gamestate; // Às’†‚Ìê–ÊID.
 
 // æséŒ¾.
 struct TitleScene;
+struct MainScene;
 struct GameOverScene;
 
 extern TitleScene titleScene;
+extern MainScene mainScene;
 extern GameOverScene gameOverScene;

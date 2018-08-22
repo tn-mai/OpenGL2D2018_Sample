@@ -2,6 +2,9 @@
 * @file TitleScene.cpp
 */
 #include "TitleScene.h"
+#include "MainScene.h"
+#include "GameData.h"
+#include "Audio.h"
 
 /**
 * タイトル画面用の構造体の初期設定を行う.
@@ -77,36 +80,7 @@ void update(GLFWEW::WindowRef window, TitleScene* scene)
 	} else if (scene->mode == scene->modeNextState) {
 		finalize(scene); // タイトル画面の後始末.
 		gamestate = gamestateMain;
-
-		// ゲームの初期設定を行う.
-
-		//スプライトに画像を設定.
-		sprBackground = Sprite("Res/UnknownPlanet.png");
-		sprPlayer.spr = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
-		sprPlayer.spr.Animator(FrameAnimation::Animate::Create(tlPlayer));
-		sprPlayer.collisionShape = Rect(-24, -8, 48, 16);
-		sprPlayer.health = 1;
-
-		initializeActorList(std::begin(enemyList), std::end(enemyList));
-		initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
-		initializeActorList(std::begin(effectList), std::end(effectList));
-
-		enemyGenerationTimer = 2;
-		score = 0;
-		timer = 0;
-
-		// 敵配置マップを読み込む.
-		enemyMap.Load("Res/EnemyMap.json");
-		mapCurrentPosX = windowWidth;
-		mapProcessedX = windowWidth;
-
-		// 音声を準備する.
-		Audio::EngineRef audio = Audio::Engine::Instance();
-		seBlast = audio.Prepare("Res/Audio/Blast.xwm");
-		sePlayerShot = audio.Prepare("Res/Audio/PlayerShot.xwm");
-		bgm = audio.Prepare("Res/Audio/Neolith.xwm");
-		// BGMをループ再生する.
-		bgm->Play(Audio::Flag_Loop);
+		initialize(&mainScene);
 	}
 }
 

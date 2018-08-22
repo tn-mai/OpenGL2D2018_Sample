@@ -1,6 +1,7 @@
 /**
 * @file Main.cpp
 */
+#include "MainScene.h"
 #include "TitleScene.h"
 #include "GameOverScene.h"
 #include "GameData.h"
@@ -40,7 +41,7 @@ Audio::SoundPtr seBlast;
 int gamestate; // 実行中の場面ID.
 
 TitleScene titleScene;
-
+MainScene mainScene;
 GameOverScene gameOverScene;
 
 // 敵の出現を制御するためのデータ.
@@ -85,6 +86,49 @@ void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
 void playerBulletAndEnemyContactHandler(Actor*, Actor*);
 void playerAndEnemyContactHandler(Actor*, Actor*);
+
+/**
+* メイン画面用の構造体の初期設定を行う.
+*
+* @param scene     メイン画面用構造体のポインタ.
+*
+* @retval true  初期化成功.
+* @retval false 初期化失敗.
+*/
+bool initialize(MainScene* scene)
+{
+	// ゲームの初期設定を行う.
+
+	//スプライトに画像を設定.
+	sprBackground = Sprite("Res/UnknownPlanet.png");
+	sprPlayer.spr = Sprite("Res/Objects.png", glm::vec3(0, 0, 0), Rect(0, 0, 64, 32));
+	sprPlayer.spr.Animator(FrameAnimation::Animate::Create(tlPlayer));
+	sprPlayer.collisionShape = Rect(-24, -8, 48, 16);
+	sprPlayer.health = 1;
+
+	initializeActorList(std::begin(enemyList), std::end(enemyList));
+	initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
+	initializeActorList(std::begin(effectList), std::end(effectList));
+
+	enemyGenerationTimer = 2;
+	score = 0;
+	timer = 0;
+
+	// 敵配置マップを読み込む.
+	enemyMap.Load("Res/EnemyMap.json");
+	mapCurrentPosX = windowWidth;
+	mapProcessedX = windowWidth;
+
+	// 音声を準備する.
+	Audio::EngineRef audio = Audio::Engine::Instance();
+	seBlast = audio.Prepare("Res/Audio/Blast.xwm");
+	sePlayerShot = audio.Prepare("Res/Audio/PlayerShot.xwm");
+	bgm = audio.Prepare("Res/Audio/Neolith.xwm");
+	// BGMをループ再生する.
+	bgm->Play(Audio::Flag_Loop);
+
+	return true;
+}
 
 /**
 * プログラムのエントリーポイント.
