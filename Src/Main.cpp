@@ -29,6 +29,7 @@ glm::vec3 playerVelocity; // 自機の移動速度.
 Actor enemyList[128]; // 敵のリスト.
 Actor playerBulletList[128]; // 自機の弾のリスト.
 Actor effectList[128]; // 爆発などの特殊効果用スプライトのリスト.
+Actor itemList[64]; // アイテム用スプライトのリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
 float timer; // シーン切り替えで使用するタイマー.
@@ -113,6 +114,7 @@ bool initialize(MainScene* scene)
 	initializeActorList(std::begin(enemyList), std::end(enemyList));
 	initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
 	initializeActorList(std::begin(effectList), std::end(effectList));
+	initializeActorList(std::begin(itemList), std::end(itemList));
 
 	enemyGenerationTimer = 2;
 	score = 0;
@@ -316,7 +318,9 @@ void update(GLFWEW::WindowRef window)
 		const int mapX = static_cast<int>(mapProcessedX / tileSize.x);
 		for (int mapY = 0; mapY < tiledMapLayer.size.y; ++mapY) {
 			const int enemyId = 256; // 敵とみなすタイルID.
-			if (tiledMapLayer.At(mapY, mapX) == enemyId) {
+			const int powerUpItemId = 230; // パワーアップアイテムのID.
+			const int tileId = tiledMapLayer.At(mapY, mapX);
+			if (tileId == enemyId) {
 				Actor* enemy = findAvailableActor(std::begin(enemyList), std::end(enemyList));
 				// 空いている構造体が見つかったら、それを使って敵を出現させる.
 				if (enemy != nullptr) {
@@ -333,6 +337,16 @@ void update(GLFWEW::WindowRef window)
 					enemy->spr.Tweener(TA::Animate::Create(par));
 					enemy->collisionShape = Rect(-16, -16, 32, 32);
 					enemy->health = 2;
+				}
+			} else if (tileId == powerUpItemId) {
+				Actor* item = findAvailableActor(std::begin(itemList), std::end(itemList));
+				if (item != nullptr) {
+					const float y = windowHeight * 0.5f - static_cast<float>(mapY * tileSize.x);
+					item->spr = Sprite("Res/Objects.png", glm::vec3(0.5f * windowWidth, y, 0), Rect(160, 32, 32, 32));
+					namespace TA = TweenAnimation;
+					item->spr.Tweener(TA::Animate::Create(TA::MoveBy::Create(16, glm::vec3(-1000, 0, 0))));
+					item->collisionShape = Rect(-16, -16, 32, 32);
+					item->health = 1;
 				}
 			}
 		}
@@ -379,6 +393,7 @@ void update(GLFWEW::WindowRef window)
 	updateActorList(std::begin(enemyList), std::end(enemyList), deltaTime);
 	updateActorList(std::begin(playerBulletList), std::end(playerBulletList), deltaTime);
 	updateActorList(std::begin(effectList), std::end(effectList), deltaTime);
+	updateActorList(std::begin(itemList), std::end(itemList), deltaTime);
 
 	// 自機の弾と敵の衝突判定.
 	detectCollision(
@@ -415,6 +430,7 @@ void render(GLFWEW::WindowRef window)
 	renderActorList(std::begin(enemyList), std::end(enemyList));
 	renderActorList(std::begin(playerBulletList), std::end(playerBulletList));
 	renderActorList(std::begin(effectList), std::end(effectList));
+	renderActorList(std::begin(itemList), std::end(itemList));
 	renderer.EndUpdate();
 	renderer.Draw(glm::vec2(windowWidth, windowHeight));
 
