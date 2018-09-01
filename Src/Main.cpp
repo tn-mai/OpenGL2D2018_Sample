@@ -91,6 +91,7 @@ void update(GLFWEW::WindowRef);
 void render(GLFWEW::WindowRef);
 void playerBulletAndEnemyContactHandler(Actor*, Actor*);
 void playerAndEnemyContactHandler(Actor*, Actor*);
+void playerAndItemContactHandler(Actor*, Actor*);
 
 /**
 * メイン画面用の構造体の初期設定を行う.
@@ -405,6 +406,11 @@ void update(GLFWEW::WindowRef window)
 		&sprPlayer, &sprPlayer + 1,
 		std::begin(enemyList), std::end(enemyList),
 		playerAndEnemyContactHandler);
+	// 自機とアイテムの衝突判定.
+	detectCollision(
+		&sprPlayer, &sprPlayer + 1,
+		std::begin(itemList), std::end(itemList),
+		playerAndItemContactHandler);
 }
 
 /**
@@ -459,11 +465,6 @@ void playerBulletAndEnemyContactHandler(Actor* bullet, Actor* enemy)
 	enemy->health -= tmp;
 	if (enemy->health <= 0) {
 		score += 100;
-		// 得点に応じて自機の武器を強化する.
-		weaponLevel = score / 2000;
-		if (weaponLevel > weaponLevelMax) {
-			weaponLevel = weaponLevelMax;
-		}
 		// 爆発を表示する.
 		Actor* blast = findAvailableActor(std::begin(effectList), std::end(effectList));
 		if (blast != nullptr) {
@@ -512,5 +513,23 @@ void playerAndEnemyContactHandler(Actor* player, Actor* enemy)
 			blast->health = 1;
 			seBlast->Play();// 爆発音を再生.
 		}
+	}
+}
+
+/**
+* 自機とアイテムの衝突を処理する.
+*
+* @param player 自機のポインタ.
+* @param item   アイテムのポインタ.
+*/
+void playerAndItemContactHandler(Actor* player, Actor* item)
+{
+	item->health = 0;
+
+	// 自機の武器を強化する.
+	++weaponLevel;
+	if (weaponLevel > weaponLevelMax) {
+		weaponLevel = weaponLevelMax;
+		score += 1000;
 	}
 }
