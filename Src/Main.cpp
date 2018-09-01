@@ -28,6 +28,7 @@ glm::vec3 playerVelocity; // 自機の移動速度.
 
 Actor enemyList[128]; // 敵のリスト.
 Actor playerBulletList[128]; // 自機の弾のリスト.
+Actor playerLaserList[3]; // 自機のレーザーのリスト.
 Actor effectList[128]; // 爆発などの特殊効果用スプライトのリスト.
 Actor itemList[64]; // アイテム用スプライトのリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
@@ -115,6 +116,7 @@ bool initialize(MainScene* scene)
 
 	initializeActorList(std::begin(enemyList), std::end(enemyList));
 	initializeActorList(std::begin(playerBulletList), std::end(playerBulletList));
+	initializeActorList(std::begin(playerLaserList), std::end(playerLaserList));
 	initializeActorList(std::begin(effectList), std::end(effectList));
 	initializeActorList(std::begin(itemList), std::end(itemList));
 
@@ -395,6 +397,7 @@ void update(GLFWEW::WindowRef window)
 	// Actorの更新.
 	updateActorList(std::begin(enemyList), std::end(enemyList), deltaTime);
 	updateActorList(std::begin(playerBulletList), std::end(playerBulletList), deltaTime);
+	updateActorList(std::begin(playerLaserList), std::end(playerLaserList), deltaTime);
 	updateActorList(std::begin(effectList), std::end(effectList), deltaTime);
 	updateActorList(std::begin(itemList), std::end(itemList), deltaTime);
 
@@ -437,6 +440,7 @@ void render(GLFWEW::WindowRef window)
 	}
 	renderActorList(std::begin(enemyList), std::end(enemyList));
 	renderActorList(std::begin(playerBulletList), std::end(playerBulletList));
+	renderActorList(std::begin(playerLaserList), std::end(playerLaserList));
 	renderActorList(std::begin(effectList), std::end(effectList));
 	renderActorList(std::begin(itemList), std::end(itemList));
 	renderer.EndUpdate();
