@@ -34,9 +34,16 @@ Actor itemList[64]; // アイテム用スプライトのリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
 float timer; // シーン切り替えで使用するタイマー.
+
 const int weaponLevelMin = 0; // 自機の武器強化の最低段階.
 const int weaponLevelMax = 3; // 自機の武器強化の最高段階.
 int weaponLevel; // 自機の武器強化段階.
+
+const int weaponTypeWideShot = 0; // 広範囲ショット.
+const int weaponTypeLaser = 1; // レーザー.
+int weaponType; // 自機の武器種類.
+
+const glm::vec3 firingPointOffset = glm::vec3(36, -9, 0); // 弾の発射口の位置を補正するための値.
 
 // 音声制御用変数.
 Audio::SoundPtr bgm;
@@ -123,6 +130,7 @@ bool initialize(MainScene* scene)
 	enemyGenerationTimer = 2;
 	score = 0;
 	weaponLevel = weaponLevelMin;
+	weaponType = weaponTypeWideShot;
 	timer = 0;
 
 	// 敵配置マップを読み込む.
@@ -234,8 +242,17 @@ void processInput(GLFWEW::WindowRef window)
 			playerVelocity = glm::normalize(playerVelocity) * 400.0f;
 		}
 
+		// 武器の切り替え.
+		if (gamepad.buttonDown & GamePad::B) {
+			if (weaponType == weaponTypeWideShot) {
+				weaponType = weaponTypeLaser;
+			} else {
+				weaponType = weaponTypeWideShot;
+			}
+		}
+
 		// 弾の発射.
-		if (gamepad.buttonDown & GamePad::A) {
+		if ((weaponType == weaponTypeWideShot) && (gamepad.buttonDown & GamePad::A)) {
 			for (int i = 0; i < weaponLevel * 2 + 1; ++i) {
 				Actor* bullet = findAvailableActor(std::begin(playerBulletList), std::end(playerBulletList));
 				// 空いている構造体が見つかったら、それを使って弾を発射する.
@@ -251,6 +268,23 @@ void processInput(GLFWEW::WindowRef window)
 					bullet->health = 4;
 					sePlayerShot->Play(); // 弾の発射音を再生.
 				}
+			}
+		}
+		if ((weaponType == weaponTypeLaser) && (gamepad.buttons & GamePad::A)) {
+			if (playerLaserList[0].health <= 0) {
+				const glm::vec3 posFiringPoint = sprPlayer.spr.Position() + firingPointOffset;
+				playerLaserList[0].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(96, 0, 32, 16));
+				playerLaserList[0].health = 1;
+				playerLaserList[1].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(112, 0, 32, 16));
+				playerLaserList[1].health = 1;
+				playerLaserList[1].collisionShape = Rect(-8, -4, 16, 8);
+				playerLaserList[2].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(128, 0, 32, 16));
+				playerLaserList[2].health = 1;
+			}
+		} else {
+			for (Actor* i = std::begin(playerLaserList); i != std::end(playerLaserList); ++i) {
+				i->spr = Sprite();
+				i->health = 0;
 			}
 		}
 	}
@@ -400,6 +434,29 @@ void update(GLFWEW::WindowRef window)
 	updateActorList(std::begin(playerLaserList), std::end(playerLaserList), deltaTime);
 	updateActorList(std::begin(effectList), std::end(effectList), deltaTime);
 	updateActorList(std::begin(itemList), std::end(itemList), deltaTime);
+
+	// レーザーの移動.
+	if (playerLaserList[0].health > 0) {
+		const glm::vec3 posFiringPoint = sprPlayer.spr.Position() + firingPointOffset;
+		glm::vec3 posHead = playerLaserList[2].spr.Position();
+		posHead.x += 1600.0f * deltaTime;
+		if (posHead.x > windowWidth * 0.5f) {
+			posHead.x = windowWidth * 0.5f;
+		}
+		posHead.y = posFiringPoint.y;
+		playerLaserList[2].spr.Position(posHead);
+
+		const float bodyBaseLength = 32.0f;
+		const float bodyLength = posHead.x - posFiringPoint.x - 16.0f * 2.0f;
+		glm::vec3 posBody = playerLaserList[1].spr.Position();
+		posBody.x = posFiringPoint.x + bodyLength * 0.5f + 16.0f;
+		posBody.y = posFiringPoint.y;
+		playerLaserList[1].spr.Position(posBody);
+		playerLaserList[1].spr.Scale(glm::vec2(bodyLength / bodyBaseLength, 1));
+		playerLaserList[1].collisionShape = Rect(-bodyLength * 0.5f, -4, bodyLength, 8);
+
+		playerLaserList[0].spr.Position(posFiringPoint);
+	}
 
 	// 自機の弾と敵の衝突判定.
 	detectCollision(

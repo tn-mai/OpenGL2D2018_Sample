@@ -47,7 +47,7 @@ void updateActorList(Actor* first, Actor* last, float deltaTime)
 	for (Actor* i = first; i != last; ++i) {
 		if (i->health > 0) {
 			i->spr.Update(deltaTime);
-			if (i->spr.Tweener()->IsFinished()) {
+			if (i->spr.Tweener() && i->spr.Tweener()->IsFinished()) {
 				i->health = 0;
 			}
 		}
