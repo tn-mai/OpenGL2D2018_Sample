@@ -41,6 +41,7 @@ int weaponLevel; // 自機の武器強化段階.
 Audio::SoundPtr bgm;
 Audio::SoundPtr sePlayerShot;
 Audio::SoundPtr seBlast;
+Audio::SoundPtr sePowerUp;
 
 // ゲームの状態.
 int gamestate; // 実行中の場面ID.
@@ -131,6 +132,7 @@ bool initialize(MainScene* scene)
 	Audio::EngineRef audio = Audio::Engine::Instance();
 	seBlast = audio.Prepare("Res/Audio/Blast.xwm");
 	sePlayerShot = audio.Prepare("Res/Audio/PlayerShot.xwm");
+	sePowerUp = audio.Prepare("Res/Audio/GetItem.xwm");
 	bgm = audio.Prepare("Res/Audio/Neolith.xwm");
 	// BGMをループ再生する.
 	bgm->Play(Audio::Flag_Loop);
@@ -525,6 +527,7 @@ void playerAndEnemyContactHandler(Actor* player, Actor* enemy)
 void playerAndItemContactHandler(Actor* player, Actor* item)
 {
 	item->health = 0;
+	sePowerUp->Play();
 
 	// 自機の武器を強化する.
 	++weaponLevel;
