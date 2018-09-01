@@ -13,6 +13,7 @@
 #include "TiledMap.h"
 #include "Audio.h"
 #include <random>
+#include <glm/gtc/matrix_transform.hpp>
 
 const char windowTitle[] = "OpenGL2D 2018"; // タイトルバーに表示される文章.
 
@@ -31,6 +32,9 @@ Actor effectList[128]; // 爆発などの特殊効果用スプライトのリスト.
 float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
 float timer; // シーン切り替えで使用するタイマー.
+const int weaponLevelMin = 0; // 自機の武器強化の最低段階.
+const int weaponLevelMax = 3; // 自機の武器強化の最高段階.
+int weaponLevel; // 自機の武器強化段階.
 
 // 音声制御用変数.
 Audio::SoundPtr bgm;
@@ -112,6 +116,7 @@ bool initialize(MainScene* scene)
 
 	enemyGenerationTimer = 2;
 	score = 0;
+	weaponLevel = weaponLevelMin;
 	timer = 0;
 
 	// 敵配置マップを読み込む.
@@ -224,16 +229,21 @@ void processInput(GLFWEW::WindowRef window)
 
 		// 弾の発射.
 		if (gamepad.buttonDown & GamePad::A) {
-			Actor* bullet = findAvailableActor(std::begin(playerBulletList), std::end(playerBulletList));
-			// 空いている構造体が見つかったら、それを使って弾を発射する.
-			if (bullet != nullptr) {
-				bullet->spr = Sprite("Res/Objects.png", sprPlayer.spr.Position(), Rect(64, 0, 32, 16));
-				bullet->spr.Tweener(TweenAnimation::Animate::Create(
-					TweenAnimation::MoveBy::Create(1, glm::vec3(1200, 0, 0),
-					TweenAnimation::EasingType::Linear)));
-				bullet->collisionShape = Rect(-8, -4, 16, 8);
-				bullet->health = 4;
-				sePlayerShot->Play(); // 弾の発射音を再生.
+			for (int i = 0; i < weaponLevel * 2 + 1; ++i) {
+				Actor* bullet = findAvailableActor(std::begin(playerBulletList), std::end(playerBulletList));
+				// 空いている構造体が見つかったら、それを使って弾を発射する.
+				if (bullet != nullptr) {
+					bullet->spr = Sprite("Res/Objects.png", sprPlayer.spr.Position(), Rect(64, 0, 32, 16));
+					const float angles[] = { 0.0f, -7.5f, 7.5f, -15.0f, 15.0f, -22.5f, 22.5f };
+					const glm::vec3 v = glm::rotate(glm::mat4(), glm::radians(angles[i]), glm::vec3(0, 0, 1)) * glm::vec4(1200, 0, 0, 1);
+					bullet->spr.Tweener(TweenAnimation::Animate::Create(
+						TweenAnimation::MoveBy::Create(1, v,
+						TweenAnimation::EasingType::Linear)));
+					bullet->spr.Rotation(glm::radians(angles[i]));
+					bullet->collisionShape = Rect(-8, -4, 16, 8);
+					bullet->health = 4;
+					sePlayerShot->Play(); // 弾の発射音を再生.
+				}
 			}
 		}
 	}
@@ -433,6 +443,12 @@ void playerBulletAndEnemyContactHandler(Actor* bullet, Actor* enemy)
 	enemy->health -= tmp;
 	if (enemy->health <= 0) {
 		score += 100;
+		// 得点に応じて自機の武器を強化する.
+		weaponLevel = score / 2000;
+		if (weaponLevel > weaponLevelMax) {
+			weaponLevel = weaponLevelMax;
+		}
+		// 爆発を表示する.
 		Actor* blast = findAvailableActor(std::begin(effectList), std::end(effectList));
 		if (blast != nullptr) {
 			blast->spr = Sprite("Res/Objects.png", enemy->spr.Position());
