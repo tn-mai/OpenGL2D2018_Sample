@@ -48,6 +48,7 @@ const glm::vec3 firingPointOffset = glm::vec3(36, -9, 0); // ’e‚Ì”­ŽËŒû‚ÌˆÊ’u‚ð•
 // ‰¹º§Œä—p•Ï”.
 Audio::SoundPtr bgm;
 Audio::SoundPtr sePlayerShot;
+Audio::SoundPtr sePlayerLaser;
 Audio::SoundPtr seBlast;
 Audio::SoundPtr sePowerUp;
 
@@ -142,6 +143,7 @@ bool initialize(MainScene* scene)
 	Audio::EngineRef audio = Audio::Engine::Instance();
 	seBlast = audio.Prepare("Res/Audio/Blast.xwm");
 	sePlayerShot = audio.Prepare("Res/Audio/PlayerShot.xwm");
+	sePlayerLaser = audio.Prepare("Res/Audio/Laser.xwm");
 	sePowerUp = audio.Prepare("Res/Audio/GetItem.xwm");
 	bgm = audio.Prepare("Res/Audio/Neolith.xwm");
 	// BGM‚ðƒ‹[ƒvÄ¶‚·‚é.
@@ -280,11 +282,15 @@ void processInput(GLFWEW::WindowRef window)
 				playerLaserList[1].collisionShape = Rect(-8, -4, 16, 8);
 				playerLaserList[2].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(128, 0, 32, 16));
 				playerLaserList[2].health = 1;
+				sePlayerLaser->Play(Audio::Flag_Loop);
 			}
 		} else {
-			for (Actor* i = std::begin(playerLaserList); i != std::end(playerLaserList); ++i) {
-				i->spr = Sprite();
-				i->health = 0;
+			if (playerLaserList[0].health > 0) {
+				for (Actor* i = std::begin(playerLaserList); i != std::end(playerLaserList); ++i) {
+					i->spr = Sprite();
+					i->health = 0;
+				}
+				sePlayerLaser->Stop();
 			}
 		}
 	}
