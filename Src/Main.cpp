@@ -102,6 +102,7 @@ void render(GLFWEW::WindowRef);
 void playerBulletAndEnemyContactHandler(Actor*, Actor*);
 void playerAndEnemyContactHandler(Actor*, Actor*);
 void playerAndItemContactHandler(Actor*, Actor*);
+void stopPlayerLaser();
 
 /**
 * メイン画面用の構造体の初期設定を行う.
@@ -223,6 +224,7 @@ void processInput(GLFWEW::WindowRef window)
 
 	if (sprPlayer.health <= 0) {
 		playerVelocity = glm::vec3(0, 0, 0);
+		stopPlayerLaser();
 	} else {
 		// 自機の速度を設定する.
 		const GamePad gamepad = window.GetGamePad();
@@ -285,13 +287,7 @@ void processInput(GLFWEW::WindowRef window)
 				sePlayerLaser->Play(Audio::Flag_Loop);
 			}
 		} else {
-			if (playerLaserList[0].health > 0) {
-				for (Actor* i = std::begin(playerLaserList); i != std::end(playerLaserList); ++i) {
-					i->spr = Sprite();
-					i->health = 0;
-				}
-				sePlayerLaser->Stop();
-			}
+			stopPlayerLaser();
 		}
 	}
 }
@@ -601,5 +597,19 @@ void playerAndItemContactHandler(Actor* player, Actor* item)
 	if (weaponLevel > weaponLevelMax) {
 		weaponLevel = weaponLevelMax;
 		score += 1000;
+	}
+}
+
+/**
+* 自機のレーザーを停止する.
+*/
+void stopPlayerLaser()
+{
+	if (playerLaserList[0].health > 0) {
+		for (Actor* i = std::begin(playerLaserList); i != std::end(playerLaserList); ++i) {
+			i->spr = Sprite();
+			i->health = 0;
+		}
+		sePlayerLaser->Stop();
 	}
 }
