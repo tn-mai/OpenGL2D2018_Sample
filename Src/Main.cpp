@@ -102,6 +102,7 @@ void render(GLFWEW::WindowRef);
 void playerBulletAndEnemyContactHandler(Actor*, Actor*);
 void playerAndEnemyContactHandler(Actor*, Actor*);
 void playerAndItemContactHandler(Actor*, Actor*);
+void playerLaserAndEnemyContactHandler(Actor*, Actor*);
 void stopPlayerLaser();
 
 /**
@@ -278,11 +279,13 @@ void processInput(GLFWEW::WindowRef window)
 			if (playerLaserList[0].health <= 0) {
 				const glm::vec3 posFiringPoint = sprPlayer.spr.Position() + firingPointOffset;
 				playerLaserList[0].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(96, 0, 32, 16));
+				playerLaserList[1].collisionShape = Rect(-8, -4, 16, 8);
 				playerLaserList[0].health = 1;
 				playerLaserList[1].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(112, 0, 32, 16));
 				playerLaserList[1].health = 1;
 				playerLaserList[1].collisionShape = Rect(-8, -4, 16, 8);
 				playerLaserList[2].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(128, 0, 32, 16));
+				playerLaserList[1].collisionShape = Rect(-8, -4, 16, 8);
 				playerLaserList[2].health = 1;
 				sePlayerLaser->Play(Audio::Flag_Loop);
 			}
@@ -465,6 +468,10 @@ void update(GLFWEW::WindowRef window)
 		std::begin(playerBulletList), std::end(playerBulletList),
 		std::begin(enemyList), std::end(enemyList),
 		playerBulletAndEnemyContactHandler);
+	detectCollision(
+		std::begin(playerLaserList), std::end(playerLaserList),
+		std::begin(enemyList), std::end(enemyList),
+		playerLaserAndEnemyContactHandler);
 	// 自機と敵の衝突判定.
 	detectCollision(
 		&sprPlayer, &sprPlayer + 1,
@@ -528,6 +535,30 @@ void playerBulletAndEnemyContactHandler(Actor* bullet, Actor* enemy)
 	const int tmp = bullet->health;
 	bullet->health -= enemy->health;
 	enemy->health -= tmp;
+	if (enemy->health <= 0) {
+		score += 100;
+		// 爆発を表示する.
+		Actor* blast = findAvailableActor(std::begin(effectList), std::end(effectList));
+		if (blast != nullptr) {
+			blast->spr = Sprite("Res/Objects.png", enemy->spr.Position());
+			blast->spr.Animator(FrameAnimation::Animate::Create(tlBlast));
+			namespace TA = TweenAnimation;
+			blast->spr.Tweener(TA::Animate::Create(TA::Rotation::Create(20 / 60.0f, 1.5f)));
+			blast->health = 1;
+			seBlast->Play();// 爆発音を再生.
+		}
+	}
+}
+
+/**
+* 自機のレーザーと敵の衝突を処理する.
+*
+* @param laser 自機のレーザーのポインタ.
+* @param enemy  敵のポインタ.
+*/
+void playerLaserAndEnemyContactHandler(Actor* laser, Actor* enemy)
+{
+	enemy->health -= laser->health;
 	if (enemy->health <= 0) {
 		score += 100;
 		// 爆発を表示する.
