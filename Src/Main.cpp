@@ -451,13 +451,15 @@ void update(GLFWEW::WindowRef window)
 		posHead.y = posFiringPoint.y;
 		playerLaserList[2].spr.Position(posHead);
 
-		const float bodyBaseLength = 32.0f;
-		const float bodyLength = posHead.x - posFiringPoint.x - 16.0f * 2.0f;
-		glm::vec3 posBody = playerLaserList[1].spr.Position();
-		posBody.x = posFiringPoint.x + bodyLength * 0.5f + 16.0f;
+		const float halfTailSize = playerLaserList[0].spr.Rectangle().size.x * 0.5f;
+		const float halfHeadSize = playerLaserList[2].spr.Rectangle().size.x * 0.5f;
+		const float bodySize = playerLaserList[1].spr.Rectangle().size.x;
+		const float bodyLength = posHead.x - posFiringPoint.x - halfTailSize - halfHeadSize;
+		glm::vec3 posBody;
+		posBody.x = posFiringPoint.x + (posHead.x - posFiringPoint.x) * 0.5f;
 		posBody.y = posFiringPoint.y;
 		playerLaserList[1].spr.Position(posBody);
-		playerLaserList[1].spr.Scale(glm::vec2(bodyLength / bodyBaseLength, 1));
+		playerLaserList[1].spr.Scale(glm::vec2(bodyLength / bodySize, 1));
 		playerLaserList[1].collisionShape = Rect(-bodyLength * 0.5f, -4, bodyLength, 8);
 
 		playerLaserList[0].spr.Position(posFiringPoint);
