@@ -470,6 +470,7 @@ void update(GLFWEW::WindowRef window)
 		std::begin(playerBulletList), std::end(playerBulletList),
 		std::begin(enemyList), std::end(enemyList),
 		playerBulletAndEnemyContactHandler);
+	// 自機のレーザーと敵の衝突判定.
 	detectCollision(
 		std::begin(playerLaserList), std::end(playerLaserList),
 		std::begin(enemyList), std::end(enemyList),
