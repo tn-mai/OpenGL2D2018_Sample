@@ -279,13 +279,13 @@ void processInput(GLFWEW::WindowRef window)
 			if (playerLaserList[0].health <= 0) {
 				const glm::vec3 posFiringPoint = sprPlayer.spr.Position() + firingPointOffset;
 				playerLaserList[0].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(96, 0, 32, 16));
-				playerLaserList[1].collisionShape = Rect(-8, -4, 16, 8);
+				playerLaserList[0].collisionShape = Rect(-8, -4, 16, 8);
 				playerLaserList[0].health = 1;
 				playerLaserList[1].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(112, 0, 32, 16));
 				playerLaserList[1].health = 1;
 				playerLaserList[1].collisionShape = Rect(-8, -4, 16, 8);
 				playerLaserList[2].spr = Sprite("Res/Objects.png", posFiringPoint, Rect(128, 0, 32, 16));
-				playerLaserList[1].collisionShape = Rect(-8, -4, 16, 8);
+				playerLaserList[2].collisionShape = Rect(-8, -4, 16, 8);
 				playerLaserList[2].health = 1;
 				sePlayerLaser->Play(Audio::Flag_Loop);
 			}
