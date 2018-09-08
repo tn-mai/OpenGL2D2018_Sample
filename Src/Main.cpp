@@ -35,8 +35,8 @@ float enemyGenerationTimer; // 次の敵が出現するまでの時間(単位:秒).
 int score; // プレイヤーの得点.
 float timer; // シーン切り替えで使用するタイマー.
 
-const int weaponLevelMin = 0; // 自機の武器強化の最低段階.
-const int weaponLevelMax = 3; // 自機の武器強化の最高段階.
+const int weaponLevelMin = 1; // 自機の武器強化の最低段階.
+const int weaponLevelMax = 7; // 自機の武器強化の最高段階.
 int weaponLevel; // 自機の武器強化段階.
 
 const int weaponTypeWideShot = 0; // 広範囲ショット.
@@ -258,15 +258,17 @@ void processInput(GLFWEW::WindowRef window)
 
 		// 弾の発射.
 		if ((weaponType == weaponTypeWideShot) && (gamepad.buttonDown & GamePad::A)) {
-			for (int i = 0; i < weaponLevel * 2 + 1; ++i) {
+			for (int i = 0; i < weaponLevel; ++i) {
 				Actor* bullet = findAvailableActor(std::begin(playerBulletList), std::end(playerBulletList));
 				// 空いている構造体が見つかったら、それを使って弾を発射する.
 				if (bullet != nullptr) {
 					bullet->spr = Sprite("Res/Objects.png", sprPlayer.spr.Position(), Rect(64, 0, 32, 16));
 					const float angles[] = { 0.0f, -7.5f, 7.5f, -15.0f, 15.0f, -22.5f, 22.5f };
-					const glm::vec3 v = glm::rotate(glm::mat4(), glm::radians(angles[i]), glm::vec3(0, 0, 1)) * glm::vec4(1200, 0, 0, 1);
+					const float radian = angles[i] / 180.0f * 3.14f;
+					const float s = std::sin(radian);
+					const float c = std::cos(radian);
 					bullet->spr.Tweener(TweenAnimation::Animate::Create(
-						TweenAnimation::MoveBy::Create(1, v,
+						TweenAnimation::MoveBy::Create(1, glm::vec3(1200 * c, 1200 * s, 0),
 						TweenAnimation::EasingType::Linear)));
 					bullet->spr.Rotation(glm::radians(angles[i]));
 					bullet->collisionShape = Rect(-8, -4, 16, 8);
